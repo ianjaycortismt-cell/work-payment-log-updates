@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#fdf7f2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Work Pay">
+<title>Work Payment Log</title>
+<link rel="manifest" href="manifest.webmanifest?v=1.11.4">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4">
+<link rel="stylesheet" href="styles.css?v=1.11.4">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ SIDEBAR (desktop) ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">€</div>
+      <div class="brand-text">
+        <strong>Work Payment Log</strong>
+        <span id="brandSub">Hours &amp; pay</span>
+      </div>
+    </div>
+    <nav class="nav" id="sideNav">
+      <button class="nav-item active" data-view="overview"><span class="ic">◐</span> Overview</button>
+      <button class="nav-item" data-view="timesheet"><span class="ic">▤</span> Timesheet</button>
+      <button class="nav-item" data-view="analytics"><span class="ic">▥</span> Analytics</button>
+      <button class="nav-item" data-view="takehome"><span class="ic">◎</span> Take-home pay</button>
+      <button class="nav-item" data-view="spending"><span class="ic">◒</span> Spending plan</button>
+      <button class="nav-item" data-view="settings"><span class="ic">⚙</span> Settings</button>
+    </nav>
+    <div class="sidebar-foot">
+      <button class="btn btn-primary btn-block" id="sideLogBtn">+ Log a day</button>
+      <p class="tiny muted">Your totals are before tax and other deductions.</p>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <header class="topbar">
+      <h1 id="viewTitle">Overview</h1>
+      <div class="topbar-actions">
+        <button class="icon-btn hidden" id="backBtn" title="Back">‹</button>
+        <button class="icon-btn" id="themeBtn" title="Switch theme">◑</button>
+        <button class="btn btn-primary hide-mobile" id="topLogBtn">+ Log a day</button>
+      </div>
+    </header>
+
+    <div class="ptr" id="ptr"><span class="ptr-spin"></span><span id="ptrText">Pull down to sync</span></div>
+
+    <div class="scroll" id="scroll">
+
+      <!-- ---------- OVERVIEW ---------- -->
+      <section class="view" id="view-overview">
+        <div class="hero">
+          <div class="hero-glow"></div>
+          <p class="hero-label">Total pay</p>
+          <p class="hero-value" id="ovTotalPay">€0.00</p>
+          <div class="hero-meta">
+            <div><span class="k">Total time worked</span><span class="v" id="ovTotalTime">-</span></div>
+            <div><span class="k">Total hours</span><span class="v" id="ovTotalHours">0.00</span></div>
+            <div><span class="k">Days worked</span><span class="v" id="ovDays">0</span></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card accent-card" id="nextPayCard">
+            <div class="card-head">
+              <h2>Next payday</h2>
+              <span class="pill pill-accent" id="ovCountdown">–</span>
+            </div>
+            <p class="big" id="ovNextPayday">–</p>
+            <p class="muted" id="ovNextPaydayDay">–</p>
+            <div class="divider"></div>
+            <div class="rowline"><span>Pay due</span><strong id="ovPayDue">€0.00</strong></div>
+            <div class="rowline"><span>Period</span><strong id="ovPeriodRange">–</strong></div>
+            <div class="rowline"><span>Hours in period</span><strong id="ovPeriodHours">–</strong></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>This week</h2>
+              <span class="pill" id="ovWeekRange">–</span>
+            </div>
+            <p class="big" id="ovWeekPay">€0.00</p>
+            <p class="muted" id="ovWeekTime">–</p>
+            <div class="bar"><div class="bar-fill" id="ovWeekBar"></div></div>
+            <p class="tiny muted" id="ovWeekBarLabel">0.00 of 40.00 h</p>
+            <div class="divider"></div>
+            <div class="rowline"><span>Today</span><strong id="ovToday">Not logged</strong></div>
+          </div>
+        </div>
+
+        <div class="card hidden" id="leaveCard">
+          <div class="card-head">
+            <h2>Leave taken</h2>
+            <span class="pill" id="leaveTotal">–</span>
+          </div>
+          <div id="leaveList" class="leave-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Last eight weeks</h2>
+            <span class="pill" id="ovChartTotal">–</span>
+          </div>
+          <div class="chart" id="ovChart"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2 id="ovRecentTitle">Recent days</h2>
+            <button class="link" data-goto="timesheet">See all →</button>
+          </div>
+          <div id="ovRecent" class="list"></div>
+        </div>
+
+        <div class="quick">
+          <button class="quick-btn quick-primary" id="qClock"><span class="qi">◷</span><strong id="qClockLabel">Clock in</strong><small id="qClockTime">Start a shift now</small></button>
+          <button class="quick-btn" id="qLogToday"><span class="qi">＋</span><strong>Log today</strong></button>
+          <button class="quick-btn" data-goto="analytics"><span class="qi">↗</span><strong>Analytics</strong></button>
+        </div>
+
+        <div class="card overview-now-card">
+          <div class="card-head"><h2>At a glance</h2></div>
+          <div class="overview-now-grid">
+            <div><span>Expected take-home</span><strong id="ovTakeHome">€0.00</strong></div>
+            <div><span>Safe to spend</span><strong id="ovSafeSpend">€0.00</strong></div>
+            <div><span>Shifts to finish</span><strong id="ovIncomplete">0</strong></div>
+            <div><span>Cloud</span><strong id="ovCloudStatus">Off</strong></div>
+            <div><span>Local backup</span><strong id="ovBackupStatus">Not yet</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- TIMESHEET ---------- -->
+      <section class="view hidden" id="view-timesheet">
+        <div class="toolbar">
+          <div class="search">
+            <span>⌕</span>
+            <input type="search" id="tsSearch" placeholder="Search date, day or notes">
+          </div>
+          <select id="tsFilter" class="select">
+            <option value="all">All days</option>
+            <option value="worked">Worked only</option>
+            <option value="leave">Leave only</option>
+            <option value="unpaid">Unpaid only</option>
+            <option value="off">Days off only</option>
+            <option value="incomplete">Incomplete only</option>
+            <option value="planned">Planned only</option>
+            <option value="approved">Approved only</option>
+            <option value="paid">Paid only</option>
+          </select>
+        </div>
+
+        <div class="filter-row">
+          <label><span>From</span><input type="date" id="tsFrom"></label>
+          <label><span>To</span><input type="date" id="tsTo"></label>
+          <select id="tsEmployer" class="select" aria-label="Filter by employer"></select>
+          <select id="tsSort" class="select" aria-label="Sort timesheet">
+            <option value="date-desc">Newest first</option>
+            <option value="date-asc">Oldest first</option>
+            <option value="hours-desc">Most hours</option>
+            <option value="pay-desc">Highest pay</option>
+          </select>
+          <div class="seg compact" role="group" aria-label="Timesheet view">
+            <button class="on" id="tsListMode" type="button">List</button>
+            <button id="tsCalendarMode" type="button">Calendar</button>
+          </div>
+        </div>
+
+        <div class="bulk-bar hidden" id="tsBulkBar">
+          <strong id="tsSelectedCount">0 selected</strong>
+          <button class="btn" id="btnSelectShown">Select shown</button>
+          <button class="btn" id="btnBulkShift">Apply usual shift</button>
+          <button class="btn" id="btnBulkLeave">Set leave</button>
+          <button class="btn btn-danger-ghost" id="btnBulkDelete">Delete</button>
+          <button class="link" id="btnBulkClear">Clear selection</button>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat"><span class="k">Days worked</span><span class="v" id="tsDays">0</span></div>
+          <div class="stat"><span class="k">Hours (decimal)</span><span class="v" id="tsHours">0.00</span></div>
+          <div class="stat"><span class="k">Time worked</span><span class="v" id="tsTime">-</span></div>
+          <div class="stat"><span class="k">Pay</span><span class="v accent" id="tsPay">€0.00</span></div>
+        </div>
+
+        <div id="tsList"></div>
+        <div id="tsCalendar" class="calendar-wrap hidden"></div>
+        <div class="empty hidden" id="tsEmpty">
+          <p class="empty-mark">▤</p>
+          <h3>No days logged yet</h3>
+          <p class="muted">Tap <strong>+ Log a day</strong> when you are ready.</p>
+        </div>
+      </section>
+
+      <!-- ---------- ANALYTICS ---------- -->
+      <section class="view hidden" id="view-analytics">
+        <div class="analytics-toolbar card">
+          <div class="range-presets" id="anPresets" role="group" aria-label="Analytics date range">
+            <button data-range="week">This week</button>
+            <button class="on" data-range="month">This month</button>
+            <button data-range="3months">Last 3 months</button>
+            <button data-range="year">This year</button>
+            <button data-range="all">All time</button>
+            <button data-range="custom">Custom</button>
+          </div>
+          <div class="analytics-filters">
+            <label class="field an-custom hidden" id="anFromWrap"><span>From</span><input type="date" id="anFrom"></label>
+            <label class="field an-custom hidden" id="anToWrap"><span>To</span><input type="date" id="anTo"></label>
+            <label class="field"><span>Employer</span><select id="anEmployer"></select></label>
+            <label class="toggle-row compare-toggle"><input type="checkbox" id="anCompare" checked><span>Compare previous period</span></label>
+          </div>
+        </div>
+
+        <div class="analytics-kpis" id="anKpis">
+          <div class="metric"><span>Total hours</span><strong id="anHours">0.00</strong><em id="anHoursDelta"></em></div>
+          <div class="metric accent-metric"><span>Gross pay</span><strong id="anPay">€0.00</strong><em id="anPayDelta"></em></div>
+          <div class="metric"><span>Estimated take-home</span><strong id="anNet">€0.00</strong><em>using your current tax setup</em></div>
+          <div class="metric"><span>Average weekly</span><strong id="anAvgWeek">0h 00m</strong><em>selected period</em></div>
+          <div class="metric"><span>Days worked</span><strong id="anDays">0</strong><em id="anDaysDelta"></em></div>
+          <div class="metric"><span>Leave taken</span><strong id="anLeave">0</strong><em>days</em></div>
+          <div class="metric"><span>Average per day</span><strong id="anAvgDay">€0.00</strong><em>worked days</em></div>
+          <div class="metric"><span>Next payday</span><strong id="anNextPay">€0.00</strong><em id="anNextPayDate">–</em></div>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="card chart-card"><div class="card-head"><h2>Hours by week</h2><span class="pill" id="anHoursChartTotal">–</span></div><div class="mini-chart" id="anHoursChart"></div></div>
+          <div class="card chart-card"><div class="card-head"><h2>Pay over time</h2><span class="pill" id="anPayChartTotal">–</span></div><div class="mini-chart" id="anPayChart"></div></div>
+          <div class="card chart-card"><div class="card-head"><h2>Days</h2><span class="pill" id="anDaysChartTotal">–</span></div><div class="donut-layout" id="anDaysChart"></div></div>
+          <div class="card chart-card"><div class="card-head"><h2>Pay by payday</h2><span class="pill" id="anPeriodChartTotal">–</span></div><div class="mini-chart" id="anPeriodChart"></div></div>
+          <div class="card chart-card"><div class="card-head"><h2>Gross and take-home</h2></div><div class="mini-chart" id="anGrossNetChart"></div></div>
+          <div class="card chart-card"><div class="card-head"><h2>Earnings by employer</h2></div><div class="mini-chart" id="anEmployerChart"></div></div>
+          <div class="card chart-card"><div class="card-head"><h2>Earnings by weekday</h2></div><div class="mini-chart" id="anWeekdayChart"></div></div>
+        </div>
+
+        <div class="card projection-card">
+          <div class="card-head"><h2>Estimates</h2></div>
+          <div class="pattern-grid">
+            <div><span>Expected this month</span><strong id="anProjectedMonth">€0.00</strong></div>
+            <div><span>Expected next payday</span><strong id="anProjectedPayday">€0.00</strong></div>
+            <div><span>Projected period hours</span><strong id="anProjectedHours">0.00</strong></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>Work patterns</h2><span class="pill" id="anPatternRange">Selected period</span></div>
+          <div class="pattern-grid">
+            <div><span>Average start</span><strong id="anAvgStart">–</strong></div>
+            <div><span>Average finish</span><strong id="anAvgFinish">–</strong></div>
+            <div><span>Average shift</span><strong id="anAvgShift">–</strong></div>
+            <div><span>Longest shift</span><strong id="anLongest">–</strong></div>
+            <div><span>Shortest shift</span><strong id="anShortest">–</strong></div>
+            <div><span>Busiest weekday</span><strong id="anBusiest">–</strong></div>
+            <div><span>Most common leave</span><strong id="anCommonLeave">–</strong></div>
+          </div>
+        </div>
+
+        <div class="analytics-table-card card"><div class="card-head"><h2>Weeks</h2><button class="link table-sort" data-table="weeks">Sort newest</button></div><div class="table-scroll"><table><thead><tr><th>Week</th><th>Days</th><th>Regular</th><th>Overtime</th><th>Leave</th><th>Gross pay</th><th>Change</th></tr></thead><tbody id="anWeeksBody"></tbody></table></div></div>
+        <div class="analytics-table-card card"><div class="card-head"><h2>Pay periods</h2><button class="link table-sort" data-table="periods">Sort newest</button></div><div class="table-scroll"><table><thead><tr><th>Period</th><th>Payday</th><th>Days</th><th>Hours</th><th>Paid leave</th><th>Expected pay</th><th>Status</th></tr></thead><tbody id="anPeriodsBody"></tbody></table></div></div>
+        <div class="analytics-table-card card"><div class="card-head"><h2>Months</h2><button class="link table-sort" data-table="months">Sort newest</button></div><div class="table-scroll"><table class="month-table"><thead><tr><th>Month</th><th>Days</th><th>Hours</th><th>Leave</th><th>Gross earnings</th><th>Weekly average</th></tr></thead><tbody id="anMonthsBody"></tbody></table></div></div>
+        <div class="analytics-table-card card"><div class="card-head"><h2>Leave</h2><span class="pill" id="anLeaveTypes">0 types</span></div><div class="table-scroll"><table class="leave-table"><thead><tr><th>Leave type</th><th>Days</th><th>Hours</th><th>Pay rate</th><th>Value</th></tr></thead><tbody id="anLeaveBody"></tbody></table></div></div>
+
+        <div class="card analytics-export">
+          <h2 class="card-title">Export</h2>
+          <div class="btn-row"><button class="btn btn-primary" id="btnAnalyticsCsv">Export CSV</button><button class="btn" id="btnAnalyticsPdf">Export PDF</button></div>
+        </div>
+      </section>
+
+      <!-- ---------- TAKE-HOME PAY ---------- -->
+      <section class="view hidden" id="view-takehome">
+        <div class="takehome-intro card">
+          <div>
+            <span class="eyebrow">Next payday</span>
+            <h2>What should reach your account</h2>
+            <p class="muted">An estimate for your next pay, based on your payday settings and the tax rules below.</p>
+          </div>
+          <span class="pill pill-accent" id="thRulesYear">2026 rules</span>
+        </div>
+
+        <div class="takehome-layout">
+          <div class="card takehome-settings">
+            <div class="card-head"><h2>Your tax setup</h2><span class="pill" id="thCurrencyMatch">EUR</span></div>
+            <div class="form-grid">
+              <label class="field">
+                <span>Country</span>
+                <select id="thCountry">
+                  <option value="MT">Malta</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="UK-SCT">Scotland</option>
+                  <option value="IE">Ireland</option>
+                  <option value="NZ">New Zealand</option>
+                  <option value="CUSTOM">Another country or custom</option>
+                </select>
+              </label>
+              <label class="field" id="thProfileWrap">
+                <span>Tax situation</span>
+                <select id="thProfile"></select>
+              </label>
+              <label class="field hidden" id="thSocialWrap">
+                <span>Social security</span>
+                <select id="thSocial"></select>
+              </label>
+              <label class="field">
+                <span>Other taxable income per year</span>
+                <input type="number" id="thOtherIncome" min="0" step="100" inputmode="decimal" value="0">
+              </label>
+              <label class="field">
+                <span>Months you expect to work this year</span>
+                <input type="number" id="thWorkMonths" min="1" max="12" step="1" inputmode="numeric" value="12">
+              </label>
+              <label class="field">
+                <span>Hours expected by payday</span>
+                <div class="input-suffix">
+                  <input type="number" id="thEstimatedHours" min="0" step="0.25" inputmode="decimal" placeholder="Automatic" aria-describedby="thHoursHelp">
+                  <b>hrs</b>
+                </div>
+              </label>
+              <label class="field">
+                <span>Job for estimated hours</span>
+                <select id="thEstimateEmployer"></select>
+              </label>
+            </div>
+            <p class="hint takehome-hours-help" id="thHoursHelp"></p>
+
+            <div class="custom-tax-fields hidden" id="thCustomFields">
+              <div class="form-grid">
+                <label class="field"><span>Income tax</span><div class="input-suffix"><input type="number" id="thCustomTax" min="0" max="100" step="0.1" inputmode="decimal"><b>%</b></div></label>
+                <label class="field"><span>Social security</span><div class="input-suffix"><input type="number" id="thCustomSocial" min="0" max="100" step="0.1" inputmode="decimal"><b>%</b></div></label>
+                <label class="field"><span>Other deductions</span><div class="input-suffix"><input type="number" id="thCustomOther" min="0" max="100" step="0.1" inputmode="decimal"><b>%</b></div></label>
+                <label class="field"><span>Fixed deduction each month</span><input type="number" id="thCustomFixed" min="0" step="1" inputmode="decimal"></label>
+              </div>
+            </div>
+            <p class="hint" id="thProfileHelp"></p>
+            <div class="tax-warning hidden" id="thCurrencyWarning"></div>
+          </div>
+
+          <div class="takehome-result card accent-card">
+            <span class="eyebrow">Estimated take-home on payday</span>
+            <span class="pill" id="thConfidence">Waiting for work hours</span>
+            <strong id="thNet">€0.00</strong>
+            <div class="takehome-bar" aria-hidden="true"><i id="thNetBar"></i></div>
+            <p id="thNetCaption">Based on your expected gross pay.</p>
+          </div>
+        </div>
+
+        <div class="takehome-kpis">
+          <div class="metric"><span>Logged for this payday</span><strong id="thLogged">€0.00</strong><em>saved work and paid leave</em></div>
+          <div class="metric accent-metric"><span>Expected gross</span><strong id="thGross">€0.00</strong><em id="thGrossNote">by month end</em></div>
+          <div class="metric"><span>Estimated deductions</span><strong id="thDeductions">€0.00</strong><em id="thRate">0% of gross</em></div>
+          <div class="metric"><span>Estimated yearly take-home</span><strong id="thYearNet">€0.00</strong><em id="thYearNetNote">across 12 work months</em></div>
+        </div>
+
+        <div class="card tax-breakdown-card">
+          <div class="card-head"><h2>Estimate breakdown</h2><span class="pill" id="thPresetName">Malta</span></div>
+          <div class="table-scroll">
+            <table class="tax-table">
+              <thead><tr><th>Item</th><th>Next payday</th><th>Estimated year</th></tr></thead>
+              <tbody id="thBreakdown"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <details class="card sect payslip-compare" id="payslipCompare">
+          <summary class="sect-head">
+            <span class="sect-ic">≋</span>
+            <span class="sect-name">Compare a payslip</span>
+            <span class="sect-sum"><span class="pill" id="thPayslipPill">optional</span></span>
+          </summary>
+          <div class="sect-body">
+            <div class="form-grid">
+              <label class="field"><span>Gross pay</span><input type="number" id="thPayslipGross" min="0" step="0.01" inputmode="decimal"></label>
+              <label class="field"><span>Income tax</span><input type="number" id="thPayslipTax" min="0" step="0.01" inputmode="decimal"></label>
+              <label class="field"><span>Social security</span><input type="number" id="thPayslipSocial" min="0" step="0.01" inputmode="decimal"></label>
+              <label class="field"><span>Other deductions</span><input type="number" id="thPayslipOther" min="0" step="0.01" inputmode="decimal"></label>
+              <label class="field"><span>Net pay received</span><input type="number" id="thPayslipNet" min="0" step="0.01" inputmode="decimal"></label>
+            </div>
+            <p class="hint" id="thPayslipResult">Enter the figures printed on your payslip.</p>
+          </div>
+        </details>
+
+        <div class="card tax-notes-card">
+          <h2 class="card-title">Before you rely on this number</h2>
+          <p id="thAssumptions" class="muted"></p>
+          <p class="tax-student-note hidden" id="thStudentNote"><strong>Student in Malta?</strong> If an employer gives you a payslip, choose a student employee option, not stipend or grant. Income tax and social security are separate: your income tax can be €0 while social security is still deducted.</p>
+          <div class="btn-row tax-source-buttons" id="thSources"></div>
+          <p class="hint">This is a planning estimate, not a payslip or tax return. Your tax code, credits, pension, benefits and payroll rounding can change the final amount.</p>
+        </div>
+      </section>
+
+      <!-- ---------- SPENDING PLAN ---------- -->
+      <section class="view hidden" id="view-spending">
+        <div class="spending-intro card">
+          <div>
+            <span class="eyebrow">Next payday</span>
+            <h2>Decide where your money goes</h2>
+            <p class="muted">Start with your estimated take-home pay or enter your own amount.</p>
+          </div>
+          <button class="btn" type="button" data-goto="takehome">Check take-home pay</button>
+        </div>
+
+        <div class="card spending-source">
+          <div class="card-head"><h2>Money available</h2><span class="pill" id="spSourcePill">Take-home estimate</span></div>
+          <div class="form-grid">
+            <label class="field"><span>Use</span><select id="spIncomeMode"><option value="takehome">Estimated take-home pay</option><option value="custom">An amount I enter</option></select></label>
+            <label class="field hidden" id="spCustomIncomeWrap"><span>Amount available</span><input type="number" id="spCustomIncome" min="0" step="10" inputmode="decimal"></label>
+          </div>
+          <p class="hint" id="spIncomeNote"></p>
+        </div>
+
+        <div class="spending-kpis">
+          <div class="metric"><span>Money available</span><strong id="spBudget">€0.00</strong><em>for this payday</em></div>
+          <div class="metric"><span>Planned</span><strong id="spPlanned">€0.00</strong><em id="spPlannedNote">across 0 categories</em></div>
+          <div class="metric"><span>Spent</span><strong id="spSpent">€0.00</strong><em id="spSpentNote">this pay period</em></div>
+          <div class="metric accent-metric" id="spBalanceCard"><span id="spBalanceLabel">Left to plan</span><strong id="spBalance">€0.00</strong><em id="spBalanceNote">unallocated</em></div>
+        </div>
+
+        <div class="spending-chart-grid">
+          <div class="card spending-chart-card">
+            <div class="card-head"><h2>Your split</h2><span class="pill" id="spChartPill">0 categories</span></div>
+            <div class="spending-donut-layout">
+              <div class="spending-donut" id="spDonut"><strong id="spDonutValue">€0.00</strong><span id="spDonutLabel">left</span></div>
+              <div class="spending-legend" id="spLegend"></div>
+            </div>
+          </div>
+          <div class="card spending-bars-card">
+            <div class="card-head"><h2>Plan at a glance</h2></div>
+            <div class="spending-bars" id="spBars"></div>
+          </div>
+        </div>
+
+        <div class="card spending-categories-card">
+          <div class="card-head"><div><h2>Your categories</h2><p class="muted tiny">Rename, reorder or remove anything you do not need.</p></div><button class="btn btn-primary" id="spAddCategory" type="button">+ Add category</button></div>
+          <div class="spending-warning hidden" id="spWarning"></div>
+          <div class="sp-category-list" id="spCategoryList"></div>
+          <div class="empty compact-empty hidden" id="spEmpty"><p class="empty-mark">◒</p><h3>No categories yet</h3><p class="muted">Add one when you are ready to plan some money.</p></div>
+        </div>
+
+        <div class="card spending-transactions-card">
+          <div class="card-head"><div><h2>Spending</h2><p class="muted tiny" id="spTransactionRange">Current pay period</p></div></div>
+          <div class="transaction-form">
+            <label class="field"><span>Date</span><input type="date" id="spTxDate"></label>
+            <label class="field"><span>Category</span><select id="spTxCategory"></select></label>
+            <label class="field"><span>Amount</span><input type="number" id="spTxAmount" min="0.01" step="0.01" inputmode="decimal"></label>
+            <label class="field"><span>What was it?</span><input type="text" id="spTxNote" maxlength="60" placeholder="Optional"></label>
+            <button class="btn btn-primary" type="button" id="spAddTransaction">Add spending</button>
+          </div>
+          <div class="transaction-list" id="spTransactionList"></div>
+        </div>
+
+        <div class="spending-chart-grid">
+          <div class="card">
+            <div class="card-head"><h2>Recurring bills</h2><span class="pill" id="spBillsTotal">€0.00 due</span></div>
+            <div class="mini-add-grid">
+              <label class="field"><span>Name</span><input type="text" id="spBillName" maxlength="40" placeholder="Phone, rent, subscription"></label>
+              <label class="field"><span>Amount</span><input type="number" id="spBillAmount" min="0.01" step="0.01" inputmode="decimal"></label>
+              <label class="field"><span>Next due</span><input type="date" id="spBillDue"></label>
+              <label class="field"><span>Category</span><select id="spBillCategory"></select></label>
+              <button class="btn" type="button" id="spAddBill">Add bill</button>
+            </div>
+            <div class="money-plan-list" id="spBillList"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Savings goals</h2></div>
+            <div class="mini-add-grid">
+              <label class="field"><span>Goal</span><input type="text" id="spGoalName" maxlength="40" placeholder="Phone, holiday, emergency fund"></label>
+              <label class="field"><span>Target</span><input type="number" id="spGoalTarget" min="0.01" step="1" inputmode="decimal"></label>
+              <label class="field"><span>Saved</span><input type="number" id="spGoalSaved" min="0" step="1" inputmode="decimal"></label>
+              <label class="field"><span>Target date</span><input type="date" id="spGoalDate"></label>
+              <button class="btn" type="button" id="spAddGoal">Add goal</button>
+            </div>
+            <div class="money-plan-list" id="spGoalList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- WEEKLY ---------- -->
+      <section class="view hidden" id="view-weekly">
+        <div id="wkList" class="list-cards"></div>
+        <div class="card total-card">
+          <div class="rowline"><span>TOTAL hours</span><strong id="wkTotalHours">0.00</strong></div>
+          <div class="rowline"><span>TOTAL time worked</span><strong id="wkTotalTime">-</strong></div>
+          <div class="rowline big-line"><span>TOTAL pay</span><strong class="accent" id="wkTotalPay">€0.00</strong></div>
+        </div>
+      </section>
+
+      <!-- ---------- PAY PERIODS ---------- -->
+      <section class="view hidden" id="view-periods">
+        <p class="note-line" id="ppNote">Each pay period is the days ending on the payday itself.</p>
+        <div id="ppList" class="list-cards"></div>
+        <div class="card total-card">
+          <div class="rowline"><span>TOTAL hours</span><strong id="ppTotalHours">0.00</strong></div>
+          <div class="rowline"><span>TOTAL time worked</span><strong id="ppTotalTime">-</strong></div>
+          <div class="rowline big-line"><span>TOTAL pay</span><strong class="accent" id="ppTotalPay">€0.00</strong></div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Notes</h2>
+          <ul class="notes" id="ppNotes"></ul>
+        </div>
+      </section>
+
+      <!-- ---------- VERSION HISTORY ---------- -->
+      <section class="view hidden" id="view-history">
+        <div class="toolbar">
+          <div class="search">
+            <span>⌕</span>
+            <input type="search" id="hSearch" placeholder="Search a date or a note">
+          </div>
+          <select id="hFilter" class="select">
+            <option value="all">Everything</option>
+            <option value="day">Days only</option>
+            <option value="settings">Settings only</option>
+          </select>
+        </div>
+        <p class="note-line" id="hNote">Newest changes first.</p>
+        <div id="hList" class="list-cards"></div>
+        <div class="empty hidden" id="hEmpty">
+          <p class="empty-mark">↺</p>
+          <h3>No changes yet</h3>
+          <p class="muted">Edits will appear here.</p>
+        </div>
+      </section>
+
+      <!-- ---------- SETTINGS ---------- -->
+      <section class="view hidden" id="view-settings">
+
+        <div class="settings-group-head">
+          <span>Pay and working hours</span>
+        </div>
+
+        <!-- Each area stays folded until it is needed, so the page reads as a
+             short, useful overview instead of a wall of forms. -->
+        <details class="card sect" id="sectEmployers">
+          <summary class="sect-head"><span class="sect-ic">◫</span><span class="sect-name">Your jobs and pay</span><span class="sect-sum" id="sumEmployers"></span></summary>
+          <div class="sect-body"><p class="muted tiny">Add another job only if its pay or usual hours are different.</p><div id="employerList" class="manage-list"></div><div class="btn-row"><button class="btn" id="btnAddEmployer">Add another job</button></div></div>
+        </details>
+
+        <details class="card sect" id="sectPay">
+          <summary class="sect-head">
+            <span class="sect-ic">€</span>
+            <span class="sect-name">Currency and work week</span>
+            <span class="sect-sum" id="sumPay"></span>
+          </summary>
+          <div class="sect-body">
+            <div class="form-grid settings-shared-fields">
+              <label class="field">
+                <span>Currency</span>
+                <select id="stCurrency"></select>
+              </label>
+              <label class="field hidden" id="stSymbolField">
+                <span>Symbol to show</span>
+                <input type="text" id="stSymbol" maxlength="4" placeholder="€">
+              </label>
+              <label class="field">
+                <span>Full week (hours)</span>
+                <input type="number" id="stWeek" step="0.5" min="1" inputmode="decimal">
+              </label>
+            </div>
+          </div>
+        </details>
+
+        <details class="card sect" id="sectTemplates">
+          <summary class="sect-head"><span class="sect-ic">⌁</span><span class="sect-name">Shift templates</span><span class="sect-sum" id="sumTemplates"></span></summary>
+          <div class="sect-body"><div id="templateList" class="manage-list"></div><div class="btn-row"><button class="btn" id="btnAddTemplate">Add template</button></div></div>
+        </details>
+
+        <div class="settings-group-head"><span>Leave and paydays</span></div>
+
+        <details class="card sect" id="sectPaydays">
+          <summary class="sect-head">
+            <span class="sect-ic">▦</span>
+            <span class="sect-name">Paydays</span>
+            <span class="sect-sum" id="sumPaydays"></span>
+          </summary>
+          <div class="sect-body">
+            <div class="form-grid">
+              <label class="field">
+                <span>First payday</span>
+                <input type="date" id="stFirstPayday">
+              </label>
+              <label class="field">
+                <span>Cycle length (days)</span>
+                <input type="number" id="stCycle" step="1" min="1" inputmode="numeric">
+              </label>
+            </div>
+            <p class="hint">Enter one payday and the number of days between payments.</p>
+          </div>
+        </details>
+
+        <details class="card sect" id="sectLeave">
+          <summary class="sect-head">
+            <span class="sect-ic">☂</span>
+            <span class="sect-name">What each type of leave pays</span>
+            <span class="sect-sum" id="sumLeave"></span>
+          </summary>
+          <div class="sect-body">
+            <p class="muted tiny">100% is full pay, 50% is half pay and 0% is unpaid.</p>
+            <div id="leaveRates" class="rate-list"></div>
+          </div>
+        </details>
+
+        <div class="settings-group-head">
+          <span>Data, backups and devices</span>
+        </div>
+
+        <div class="card health-card" id="dataHealthCard">
+          <div class="card-head"><h2>Data status</h2><span class="pill pill-good" id="healthPill">Safe</span></div>
+          <div class="health-grid">
+            <div><span>Local backup</span><strong id="healthBackup">–</strong></div>
+            <div><span>Cloud sync</span><strong id="healthCloud">–</strong></div>
+            <div><span>Mac sync</span><strong id="healthMac">–</strong></div>
+            <div><span>Pending changes</span><strong id="healthPending">0</strong></div>
+            <div><span>App version</span><strong id="healthVersion">–</strong></div>
+            <div><span>Update</span><strong id="healthUpdate">Up to date</strong></div>
+          </div>
+        </div>
+
+        <details class="card sect" id="updatesCard">
+          <summary class="sect-head">
+            <span class="sect-ic">&#8595;</span>
+            <span class="sect-name">App updates</span>
+            <span class="sect-sum" id="sumAppUpdates">Checking…</span>
+          </summary>
+          <div class="sect-body">
+            <label class="toggle-row">
+              <input type="checkbox" id="autoUpdateToggle">
+              <span>Check for updates automatically</span>
+            </label>
+            <p class="muted tiny" id="updateSettingHelp">New versions can be downloaded in the background.</p>
+            <div class="btn-row">
+              <button class="btn" id="btnCheckUpdate">Check now</button>
+            </div>
+            <div class="rowline"><span class="tiny muted" id="updateCheckStatus"></span></div>
+          </div>
+        </details>
+
+        <!-- An update is a call to action, not a setting: it stays a plain card
+             so it cannot be collapsed and missed. -->
+        <div class="card update-card hidden" id="updateCard">
+          <div class="card-head">
+            <h2>Update available</h2>
+            <span class="pill pill-accent" id="updateVersion">–</span>
+          </div>
+          <p class="muted tiny" id="updateText">A newer version is available.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnUpdate">Update now</button>
+          </div>
+        </div>
+
+        <!-- sync: host side (Mac) -->
+        <details class="card sect hidden" id="syncHostCard">
+          <summary class="sect-head">
+            <span class="sect-ic">⇄</span>
+            <span class="sect-name">Sync with your phone</span>
+            <span class="sect-sum" id="sumSyncHost"></span>
+          </summary>
+          <div class="sect-body">
+            <label class="toggle-row">
+              <input type="checkbox" id="syncToggle">
+              <span>Allow phone sync</span>
+            </label>
+            <p class="muted tiny">Keep this Mac on the same WiFi network as your phone. Open Settings on
+              the phone, then enter the address and code below. You only do this once.</p>
+            <div class="pair">
+              <div class="pair-block">
+                <span class="pair-k">This Mac's address</span>
+                <div id="syncAddresses" class="addr-list"></div>
+              </div>
+              <div class="pair-block">
+                <span class="pair-k">Pairing code</span>
+                <div class="code" id="syncCode">------</div>
+              </div>
+            </div>
+            <div class="rowline"><span id="syncHostState">Sync is off</span></div>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="btnMacRefresh">Check for changes now</button>
+              <button class="btn" id="btnNewCode">New pairing code</button>
+            </div>
+            <details class="sub">
+              <summary>Change the code automatically</summary>
+              <label class="field rotate-field">
+                <span>How often</span>
+                <select id="syncRotate">
+                  <option value="never">Never</option>
+                  <option value="hourly">Every hour</option>
+                  <option value="daily">Every day</option>
+                  <option value="3days">Every 3 days</option>
+                  <option value="weekly">Every week</option>
+                  <option value="monthly">Every month</option>
+                  <option value="yearly">Every year</option>
+                </select>
+              </label>
+              <p class="hint" id="syncRotateHint"></p>
+            </details>
+          </div>
+        </details>
+
+        <!-- sync: client side (phone) -->
+        <details class="card sect hidden" id="syncClientCard">
+          <summary class="sect-head">
+            <span class="sect-ic">⇄</span>
+            <span class="sect-name">Sync with your Mac</span>
+            <span class="sect-sum" id="sumSyncClient"></span>
+          </summary>
+          <div class="sect-body">
+            <label class="toggle-row sync-use-toggle">
+              <input type="checkbox" id="syncUseMac">
+              <span>Use Mac sync</span>
+            </label>
+            <p class="muted tiny">Optional. Cloud sync and phone backups keep working when this is off.</p>
+            <div id="syncClientControls">
+            <p class="muted tiny">Open Work Payment Log on your Mac, on the same WiFi network, and copy
+              its address and code from its Settings screen.</p>
+            <div class="form-grid">
+              <label class="field">
+                <span>Mac address</span>
+                <input type="text" id="syncHost" placeholder="192.168.1.20" inputmode="decimal" autocapitalize="off" autocorrect="off">
+              </label>
+              <label class="field">
+                <span>Pairing code</span>
+                <input type="text" id="syncCode2" placeholder="123456" inputmode="numeric" maxlength="6">
+              </label>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="btnSyncNow">Sync now</button>
+              <button class="btn" id="btnSyncFind">Find my Mac</button>
+            </div>
+            <div class="rowline"><span id="syncLast">Not synced yet</span></div>
+            <div class="rowline"><span id="syncPending" class="pending-line"></span></div>
+            <div class="rowline"><span id="syncStatus" class="tiny muted"></span></div>
+            <label class="toggle-row">
+              <input type="checkbox" id="syncAuto">
+              <span>Sync with your Mac automatically</span>
+            </label>
+            </div>
+          </div>
+        </details>
+
+        <details class="card sect" id="cloudCard">
+          <summary class="sect-head">
+            <span class="sect-ic">☁</span>
+            <span class="sect-name">Cloud sync</span>
+            <span class="sect-sum"><span class="pill" id="cloudPill">off</span></span>
+          </summary>
+          <div class="sect-body">
+            <div id="cloudAuth" class="hidden">
+              <p class="muted tiny">Google signs you in. Your private sync copy is stored in Supabase, not Google Drive.</p>
+              <div class="btn-row">
+                <button class="btn btn-primary btn-google" id="btnCloudGoogle">
+                  <span class="g">G</span> Continue with Google
+                </button>
+                <button class="btn" id="btnCloudCheck">Check server</button>
+              </div>
+              <div class="rowline"><span id="cloudAuthNote" class="tiny muted"></span></div>
+              <div id="cloudCheck2" class="check-list hidden"></div>
+            </div>
+
+            <div id="cloudAccount" class="hidden">
+              <div class="rowline"><span>Signed in as</span><strong id="cloudWho">–</strong></div>
+              <div class="rowline"><span id="cloudState">–</span></div>
+              <div class="btn-row">
+                <button class="btn" id="btnCloudSync">Sync now</button>
+                <button class="btn" id="btnCloudCheckBackup">Check cloud copy</button>
+                <button class="btn" id="btnCloudDownload">Download cloud copy</button>
+                <button class="btn" id="btnCloudRestore">Restore cloud copy</button>
+                <button class="btn" id="btnCloudActivity">View activity</button>
+                <button class="btn" id="btnCloudSignOut">Sign out</button>
+              </div>
+            </div>
+
+            <!-- Almost nobody needs this: the app ships pointed at a server
+                 already. It stays for anyone running their own. -->
+            <details class="sub" id="cloudSetup">
+              <summary>Use my own server</summary>
+              <p class="hint" id="cloudHelp"></p>
+              <div class="form-grid">
+                <label class="field"><span>Project URL</span>
+                  <input type="text" id="cloudUrl" placeholder="https://xxxx.supabase.co"
+                         autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+                <label class="field"><span>Publishable key</span>
+                  <input type="text" id="cloudKey" placeholder="sb_publishable_…"
+                         autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-primary" id="btnCloudTest">Test connection</button>
+                <button class="btn" id="btnCloudSaveProject">Save project</button>
+              </div>
+              <div id="cloudCheck" class="check-list hidden"></div>
+            </details>
+          </div>
+        </details>
+
+        <details class="card sect" id="sectBackup">
+          <summary class="sect-head">
+            <span class="sect-ic">⇩</span>
+            <span class="sect-name">Backups</span>
+            <span class="sect-sum"><span class="pill" id="backupPill">on</span></span>
+          </summary>
+          <div class="sect-body">
+            <div class="form-grid">
+              <label class="field">
+                <span>Back up</span>
+                <select id="stBackupEvery">
+                  <option value="daily">Every day</option>
+                  <option value="weekly">Every week</option>
+                  <option value="monthly">Every month</option>
+                  <option value="off">Never</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Copies to keep</span>
+                <input type="number" id="stBackupKeep" min="1" max="60" step="1" inputmode="numeric">
+              </label>
+            </div>
+            <div class="rowline"><span id="backupState">–</span></div>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="btnBackupNow">Back up now</button>
+              <button class="btn hidden" id="btnOpenBackups">Open the folder</button>
+            </div>
+
+            <div class="sect-rule"></div>
+            <p class="muted tiny">Manual copies</p>
+            <div class="btn-row">
+              <button class="btn" id="btnExportCsv">Export timesheet CSV</button>
+              <button class="btn" id="btnExportJson">Save backup (JSON)</button>
+              <button class="btn" id="btnImportJson">Restore backup</button>
+            </div>
+            <input type="file" id="fileInput" accept="application/json,.json" hidden>
+            <p class="hint" id="ioHint">CSV opens straight in Excel or Numbers.</p>
+          </div>
+        </details>
+
+        <div class="settings-group-head">
+          <span>Appearance and notifications</span>
+        </div>
+
+        <details class="card sect" id="sectNotifications">
+          <summary class="sect-head"><span class="sect-ic">◉</span><span class="sect-name">Notifications</span><span class="sect-sum" id="sumNotifications"></span></summary>
+          <div class="sect-body">
+            <div class="reminder-setting">
+              <label class="toggle-row"><input type="checkbox" id="stLogReminder"><span>Remind me to log my hours</span></label>
+              <div class="reminder-options" id="logReminderOptions">
+                <label class="field reminder-time"><span>Time</span><input type="time" id="stLogReminderTime"></label>
+                <div class="reminder-days" role="group" aria-label="Reminder days">
+                  <button type="button" data-reminder-day="1" aria-label="Monday">M</button>
+                  <button type="button" data-reminder-day="2" aria-label="Tuesday">T</button>
+                  <button type="button" data-reminder-day="3" aria-label="Wednesday">W</button>
+                  <button type="button" data-reminder-day="4" aria-label="Thursday">T</button>
+                  <button type="button" data-reminder-day="5" aria-label="Friday">F</button>
+                  <button type="button" data-reminder-day="6" aria-label="Saturday">S</button>
+                  <button type="button" data-reminder-day="0" aria-label="Sunday">S</button>
+                </div>
+                <p class="hint" id="logReminderHint"></p>
+              </div>
+            </div>
+            <div class="sect-rule"></div>
+            <div class="toggle-list">
+              <label class="toggle-row"><input type="checkbox" data-notify="payday"><span>Upcoming payday</span></label>
+              <label class="toggle-row"><input type="checkbox" data-notify="missingFinish"><span>Missing finish time</span></label>
+              <label class="toggle-row"><input type="checkbox" data-notify="incomplete"><span>Incomplete workday</span></label>
+              <label class="toggle-row"><input type="checkbox" data-notify="backup"><span>Backup problems</span></label>
+              <label class="toggle-row"><input type="checkbox" data-notify="sync"><span>Sync problems</span></label>
+              <label class="toggle-row"><input type="checkbox" data-notify="payslip"><span>Check my payslip</span></label>
+              <label class="toggle-row"><input type="checkbox" data-notify="spending"><span>Spending limit</span></label>
+              <label class="toggle-row"><input type="checkbox" data-notify="updates"><span>Available app updates</span></label>
+            </div>
+            <div class="sect-rule"></div>
+            <div class="form-grid quiet-hours">
+              <label class="field"><span>Quiet from</span><input type="time" id="stQuietStart"></label>
+              <label class="field"><span>Until</span><input type="time" id="stQuietEnd"></label>
+            </div>
+            <p class="hint">Notifications wait until quiet hours end.</p>
+          </div>
+        </details>
+
+        <details class="card sect" id="sectAppearance">
+          <summary class="sect-head"><span class="sect-ic">◑</span><span class="sect-name">Appearance</span><span class="sect-sum" id="sumAppearance">Orange with automatic theme</span></summary>
+          <div class="sect-body">
+            <div class="app-colour-picker" id="appColourPicker" role="group" aria-label="Choose app colour">
+              <button class="app-colour-choice" type="button" data-app-color="orange"><i style="--swatch:#f79009"></i><span>Orange</span></button>
+              <button class="app-colour-choice" type="button" data-app-color="blue"><i style="--swatch:#3b82f6"></i><span>Blue</span></button>
+              <button class="app-colour-choice" type="button" data-app-color="green"><i style="--swatch:#10b981"></i><span>Green</span></button>
+              <button class="app-colour-choice" type="button" data-app-color="purple"><i style="--swatch:#8b5cf6"></i><span>Purple</span></button>
+              <button class="app-colour-choice" type="button" data-app-color="pink"><i style="--swatch:#ec4899"></i><span>Pink</span></button>
+              <button class="app-colour-choice" type="button" data-app-color="teal"><i style="--swatch:#14b8a6"></i><span>Teal</span></button>
+            </div>
+            <button class="btn" id="btnThemeSettings">Change theme</button>
+          </div>
+        </details>
+
+        <details class="card sect" id="sectHistory">
+          <summary class="sect-head">
+            <span class="sect-ic">↺</span>
+            <span class="sect-name">Version history</span>
+            <span class="sect-sum" id="sumHistory"></span>
+          </summary>
+          <div class="sect-body">
+            <div class="btn-row">
+              <button class="btn btn-primary" id="btnHistory">Open version history</button>
+              <button class="btn" id="btnTour">Show the tour again</button>
+            </div>
+            <p class="hint" id="historyHint"></p>
+          </div>
+        </details>
+
+        <details class="card sect sect-danger" id="sectReset">
+          <summary class="sect-head">
+            <span class="sect-ic">⚠</span>
+            <span class="sect-name">Reset</span>
+            <span class="sect-sum"></span>
+          </summary>
+          <div class="sect-body">
+            <div class="btn-row">
+              <button class="btn" id="btnClearFuture">Remove days after today</button>
+              <button class="btn btn-danger" id="btnWipe">Delete everything</button>
+            </div>
+            <p class="hint"><strong>Remove days after today</strong> keeps today and earlier. You can undo either action from version history.</p>
+          </div>
+        </details>
+
+        <p class="tiny muted center" id="aboutLine">Work Payment Log</p>
+      </section>
+
+    </div><!-- /scroll -->
+
+    <button class="fab hide-desktop" id="fab">＋</button>
+
+    <!-- ============ BOTTOM NAV (mobile) ============ -->
+    <nav class="tabbar hide-desktop" id="tabbar">
+      <button class="tab active" data-view="overview"><span class="ic">◐</span><em>Overview</em></button>
+      <button class="tab" data-view="timesheet"><span class="ic">▤</span><em>Timesheet</em></button>
+      <button class="tab" data-view="analytics"><span class="ic">▥</span><em>Analytics</em></button>
+      <button class="tab" data-view="takehome"><span class="ic">◎</span><em>Take-home</em></button>
+      <button class="tab" data-view="spending"><span class="ic">◒</span><em>Spending</em></button>
+      <button class="tab" data-view="settings"><span class="ic">⚙</span><em>Settings</em></button>
+    </nav>
+
+  </main>
+</div>
+
+<!-- ============ EDITOR SHEET ============ -->
+<!-- ============ FIRST-RUN SETUP ============ -->
+<div class="onboard hidden" id="onboard">
+  <div class="ob-card">
+    <div class="ob-dots" id="obDots"></div>
+
+    <section class="ob-step" data-step="0">
+      <div class="ob-mark">€</div>
+      <h2>Work Payment Log</h2>
+      <p>Log your hours and see what you should be paid.</p>
+      <ul class="ob-list">
+        <li>Keep your start and finish times</li>
+        <li>Record work and leave</li>
+        <li>Check your hours and pay</li>
+      </ul>
+    </section>
+
+    <section class="ob-step hidden" data-step="1">
+      <h2>What are you paid?</h2>
+      <p>You can change this later in Settings.</p>
+      <div class="form-grid">
+        <label class="field"><span>Currency</span><select id="obCurrency"></select></label>
+        <label class="field"><span>Pay per hour</span>
+          <input type="number" id="obRate" step="0.01" min="0" inputmode="decimal"></label>
+      </div>
+      <p class="hint">This is your pay before tax and other deductions.</p>
+    </section>
+
+    <section class="ob-step hidden" data-step="2">
+      <h2>Your usual day</h2>
+      <p>New days start with these times.</p>
+      <div class="form-grid">
+        <label class="field"><span>Start</span><input type="time" id="obStart"></label>
+        <label class="field"><span>Finish</span><input type="time" id="obFinish"></label>
+        <label class="field"><span>Unpaid break (hours)</span>
+          <input type="number" id="obBreak" step="0.25" min="0" inputmode="decimal"></label>
+        <label class="field"><span>Full week (hours)</span>
+          <input type="number" id="obWeek" step="0.5" min="1" inputmode="decimal"></label>
+      </div>
+      <p class="hint" id="obShiftHint"></p>
+    </section>
+
+    <section class="ob-step hidden" data-step="3">
+      <h2>When are you paid?</h2>
+      <p>This is used to work out your pay periods.</p>
+      <div class="form-grid">
+        <label class="field"><span>Your next payday</span><input type="date" id="obPayday"></label>
+        <label class="field"><span>Paid every (days)</span>
+          <input type="number" id="obCycle" step="1" min="1" inputmode="numeric"></label>
+      </div>
+      <p class="hint">Weekly is 7, fortnightly 14, four-weekly 28. For a monthly salary
+        pick 30 and adjust the payday when it drifts.</p>
+    </section>
+
+    <section class="ob-step hidden" data-step="4">
+      <h2>That's it</h2>
+      <ul class="ob-list ob-tips">
+        <li>Tap <b>+</b> to log a day with your usual times.</li>
+        <li>Use <b>Type of day</b> for leave or a public holiday.</li>
+        <li>Use <b>Analytics</b> to check your hours and pay.</li>
+        <li>Your rate, usual hours and backups are in <b>Settings</b>.</li>
+      </ul>
+      <p class="hint">You can see this again from Settings whenever you like.</p>
+    </section>
+
+    <div class="ob-foot">
+      <button class="btn" id="obBack">Back</button>
+      <button class="btn btn-primary btn-grow" id="obNext">Get started</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim hidden" id="scrim"></div>
+<div class="sheet hidden" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-grab"></div>
+  <div class="sheet-head">
+    <h2 id="sheetTitle">Log a day</h2>
+    <button class="icon-btn" id="sheetClose" type="button" aria-label="Close editor">✕</button>
+  </div>
+
+  <div class="sheet-body">
+    <label class="field">
+      <span>Date</span>
+      <input type="date" id="edDate">
+    </label>
+
+    <label class="field">
+      <span>Type of day</span>
+      <select id="edType"></select>
+    </label>
+
+    <div class="time-pair">
+      <label class="field"><span>Employer</span><select id="edEmployer"></select></label>
+      <label class="field"><span>Shift template</span><select id="edTemplate"><option value="">Choose a template</option></select></label>
+    </div>
+
+    <label class="field">
+      <span>Shift status</span>
+      <select id="edStatus">
+        <option value="planned">Planned</option>
+        <option value="completed">Completed</option>
+        <option value="approved">Approved</option>
+        <option value="paid">Paid</option>
+      </select>
+    </label>
+
+    <div class="time-pair">
+      <label class="field">
+        <span>Start</span>
+        <input type="time" id="edStart">
+      </label>
+      <label class="field">
+        <span>Finish</span>
+        <input type="time" id="edFinish">
+      </label>
+    </div>
+
+    <div class="time-pair">
+      <label class="field"><span>Pay rate</span><select id="edRateType"><option value="standard">Normal rate</option><option value="overtime">Overtime (1.5×)</option><option value="night">Night (1.25×)</option><option value="sunday">Sunday (2×)</option><option value="public">Public holiday (2×)</option><option value="custom">Custom multiplier</option></select></label>
+      <label class="field hidden" id="edMultiplierWrap"><span>Multiplier</span><input type="number" id="edMultiplier" min="0" max="10" step="0.05" inputmode="decimal" value="1"></label>
+    </div>
+
+    <div class="time-pair">
+      <label class="field">
+        <span>Hourly rate for this shift</span>
+        <input type="number" id="edRate" min="0" step="0.01" inputmode="decimal">
+      </label>
+      <label class="field">
+        <span>First break (hours)</span>
+        <input type="number" id="edBreak" min="0" step="0.25" inputmode="decimal">
+      </label>
+    </div>
+
+    <div class="editor-breaks">
+      <label class="break-paid"><input type="checkbox" id="edBreakPaid"><span>First break is paid</span></label>
+      <div id="edExtraBreaks"></div>
+      <button class="chip" type="button" id="edAddBreak">+ Add another break</button>
+    </div>
+
+    <div class="chips">
+      <button class="chip" id="chipDefault">Default shift</button>
+      <button class="chip" id="chipYesterday">Repeat yesterday</button>
+      <button class="chip" id="chipLastWeek">Copy last week</button>
+      <button class="chip" id="chipNow">Finish now</button>
+      <button class="chip" id="chipOff">Clear times</button>
+    </div>
+
+    <div class="preview">
+      <div><span class="k">Time worked</span><span class="v" id="edTime">-</span></div>
+      <div><span class="k">Hours</span><span class="v" id="edHours">0.00</span></div>
+      <div><span class="k">Pay</span><span class="v accent" id="edPay">€0.00</span></div>
+    </div>
+    <p class="tiny muted" id="edBreakNote"></p>
+
+    <label class="field">
+      <span>Notes</span>
+      <input type="text" id="edNotes" placeholder="Optional, e.g. Left 15 min early" maxlength="120">
+    </label>
+    <div class="time-pair" id="edRepeatFields">
+      <label class="field"><span>Repeat</span><select id="edRepeat"><option value="none">Do not repeat</option><option value="weekly">Every week</option></select></label>
+      <label class="field hidden" id="edRepeatWeeksWrap"><span>Weeks to add</span><input type="number" id="edRepeatWeeks" min="1" max="52" step="1" inputmode="numeric" value="4"></label>
+    </div>
+    <div class="chips">
+      <button class="chip note-chip">Started late</button>
+      <button class="chip note-chip">Left early</button>
+      <button class="chip note-chip">Overtime</button>
+      <button class="chip note-chip">Public holiday</button>
+      <button class="chip note-chip">Not working</button>
+    </div>
+  </div>
+
+  <div class="sheet-foot">
+    <button class="btn hidden" id="edHistory">History</button>
+    <button class="btn btn-danger-ghost hidden" id="edDelete">Delete</button>
+      <button class="btn btn-primary btn-grow" id="edSave">Save shift</button>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+<div class="confirm-wrap hidden" id="confirmWrap">
+  <div class="confirm">
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p id="confirmText"></p>
+    <div class="btn-row end">
+      <button class="btn" id="confirmNo">Cancel</button>
+      <button class="btn btn-danger" id="confirmYes">Yes</button>
+    </div>
+  </div>
+</div>
+
+<script src="seed.js?v=1.11.4"></script>
+<script src="sync-core.js?v=1.11.4"></script>
+<script src="cloud.js?v=1.11.4"></script>
+<script src="app.js?v=1.11.4"></script>
+<script>
+if ((location.protocol === "https:" || location.hostname === "localhost") && "serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("service-worker.js?v=1.11.4").catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
