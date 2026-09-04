@@ -1676,13 +1676,38 @@
       fromISO: fromISO, toISO: toISOd, allocated: allocated, remaining: budget - allocated };
   }
 
-  /* ---------- Android home-screen widgets ----------
-     The launcher receives calculated summaries rather than the full work log.
+  /* ---------- Home-screen widgets ----------
+     Native launchers and the optional Scriptable iPhone widget receive
+     calculated summaries rather than the full work log.
      A short range is included so midnight, Monday and payday rollovers remain
      correct even when the app has not been opened that morning. */
+  var LIVE_WIDGET_KEY = "wpl.live-widget";
+  function loadLiveWidgetCfg() {
+    try { return Object.assign({ enabled:false, token:"", lastAt:0, error:"" },
+      JSON.parse(localStorage.getItem(LIVE_WIDGET_KEY) || "null") || {}); }
+    catch (err) { return { enabled:false, token:"", lastAt:0, error:"" }; }
+  }
+  var liveWidgetCfg = loadLiveWidgetCfg();
+  function saveLiveWidgetCfg() {
+    try { localStorage.setItem(LIVE_WIDGET_KEY, JSON.stringify(liveWidgetCfg)); }
+    catch (err) { /* the widget setup screen will explain the failure */ }
+  }
+  function ensureLiveWidgetToken() {
+    if (liveWidgetCfg.token && liveWidgetCfg.token.length >= 32) return liveWidgetCfg.token;
+    if (!window.crypto || !window.crypto.getRandomValues) return "";
+    var bytes = new Uint8Array(32);
+    window.crypto.getRandomValues(bytes);
+    liveWidgetCfg.token = Array.prototype.map.call(bytes, function (byte) {
+      return byte.toString(16).padStart(2, "0");
+    }).join("");
+    saveLiveWidgetCfg();
+    return liveWidgetCfg.token;
+  }
+
   var widgetRefreshTimer = null;
   function scheduleWidgetRefresh() {
-    if (!window.WPLBridge || !window.WPLBridge.updateWidgetData) return;
+    var nativeWidget = window.WPLBridge && window.WPLBridge.updateWidgetData;
+    if (!nativeWidget && !liveWidgetCfg.enabled) return;
     clearTimeout(widgetRefreshTimer);
     widgetRefreshTimer = setTimeout(pushWidgetSnapshot, 120);
   }
@@ -1751,15 +1776,121 @@
     employers.forEach(function (employer) {
       models[employer.id] = widgetModelFor(employer.id, baseDate, netRatio, saving);
     });
-    return { version: 1, createdAt: Date.now(), currency: currencySymbol(), dark: dark,
-      accent: colours[0], accentSoft: colours[2], employers: employers, models: models };
+    var totals = grandTotals(), takeHome = currentTakeHomeModel(), payday = takeHome.pay.period;
+    return { version: 2, createdAt: Date.now(), currency: currencySymbol(), dark: dark,
+      accent: colours[0], accentSoft: colours[2], employers: employers, models: models,
+      summary: {
+        totalPay: totals.pay, totalHours: totals.hours, daysWorked: totals.days,
+        paydayDate: payday ? toISO(payday.payday) : "",
+        paydayGross: takeHome.grossPeriod, paydayLogged: takeHome.pay.logged,
+        takeHome: takeHome.netPeriod, deductions: takeHome.deductPeriod
+      } };
   }
 
   function pushWidgetSnapshot() {
     widgetRefreshTimer = null;
-    if (!window.WPLBridge || !window.WPLBridge.updateWidgetData) return;
-    try { window.WPLBridge.updateWidgetData(JSON.stringify(widgetSnapshot())); }
-    catch (err) { /* the next save or resume will retry */ }
+    var snapshot = widgetSnapshot();
+    if (window.WPLBridge && window.WPLBridge.updateWidgetData) {
+      try { window.WPLBridge.updateWidgetData(JSON.stringify(snapshot)); }
+      catch (err) { /* the next save or resume will retry */ }
+    }
+    if (liveWidgetCfg.enabled) publishLiveWidget(false, snapshot);
+  }
+
+  function publishLiveWidget(manual, snapshot) {
+    if (!window.WPLCloud || !WPLCloud.signedIn()) {
+      liveWidgetCfg.error = "Sign in to cloud sync first.";
+      saveLiveWidgetCfg(); renderLiveWidget();
+      if (manual) toast("Sign in to cloud sync first");
+      return Promise.resolve(false);
+    }
+    var token = ensureLiveWidgetToken();
+    if (!token || !WPLCloud.pushWidget) {
+      liveWidgetCfg.error = "Live widget setup is not available yet.";
+      saveLiveWidgetCfg(); renderLiveWidget();
+      if (manual) toast(liveWidgetCfg.error);
+      return Promise.resolve(false);
+    }
+    return WPLCloud.pushWidget(token, snapshot || widgetSnapshot()).then(function () {
+      liveWidgetCfg.enabled = true;
+      liveWidgetCfg.lastAt = Date.now();
+      liveWidgetCfg.error = "";
+      saveLiveWidgetCfg(); renderLiveWidget();
+      if (manual) toast("Widget data refreshed");
+      return true;
+    }).catch(function (err) {
+      var message = (err && err.message) || "Could not refresh widget data";
+      liveWidgetCfg.error = /widget_snapshots|schema cache|does not exist/i.test(message)
+        ? "The secure widget service still needs to be enabled." : message;
+      saveLiveWidgetCfg(); renderLiveWidget();
+      if (manual) toast(liveWidgetCfg.error);
+      return false;
+    });
+  }
+
+  function renderLiveWidget() {
+    var stateText = $("widgetState"), pill = $("widgetPill"), button = $("btnRefreshLiveWidget");
+    if (!stateText || !pill) return;
+    var signedIn = window.WPLCloud && WPLCloud.signedIn();
+    stateText.textContent = liveWidgetCfg.error || !signedIn ? (liveWidgetCfg.error || "Sign in to cloud sync first.")
+      : liveWidgetCfg.lastAt ? "Widget data refreshed " + fmtAgo(liveWidgetCfg.lastAt) + "."
+      : "Ready to create your live widget.";
+    pill.textContent = liveWidgetCfg.enabled && liveWidgetCfg.lastAt ? "live" : "setup";
+    pill.className = "pill" + (liveWidgetCfg.enabled && liveWidgetCfg.lastAt ? " pill-good" : "");
+    if (button) button.disabled = !signedIn || !liveWidgetCfg.enabled;
+  }
+
+  function scriptableWidgetCode(token) {
+    var cloud = WPLCloud.cfg();
+    var appUrl = new URL("./", document.baseURI).href;
+    return [
+      "// Work Payment Log live iPhone widget",
+      "const SUPABASE_URL = " + JSON.stringify(String(cloud.url || "").replace(/\/+$/, "")) + ";",
+      "const ANON_KEY = " + JSON.stringify(cloud.key || "") + ";",
+      "const WIDGET_TOKEN = " + JSON.stringify(token) + ";",
+      "const APP_URL = " + JSON.stringify(appUrl) + ";",
+      "",
+      "const req = new Request(SUPABASE_URL + '/rest/v1/rpc/get_widget_snapshot');",
+      "req.method = 'POST';",
+      "req.headers = {'apikey': ANON_KEY, 'Content-Type': 'application/json'};",
+      "req.body = JSON.stringify({p_token: WIDGET_TOKEN});",
+      "let data = null;",
+      "try { data = await req.loadJSON(); } catch (e) {}",
+      "",
+      "const w = new ListWidget();",
+      "w.setPadding(14, 14, 13, 14);",
+      "w.url = APP_URL;",
+      "w.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000);",
+      "const accent = new Color(data?.accent || '#ff9147');",
+      "const dark = data?.dark !== false;",
+      "const bg = new LinearGradient();",
+      "bg.colors = dark ? [new Color('#160d07'), new Color('#2b190e')] : [new Color('#fffaf6'), new Color('#ffeadd')];",
+      "bg.locations = [0, 1];",
+      "w.backgroundGradient = bg;",
+      "",
+      "function label(stack, text) { const t=stack.addText(text); t.font=Font.mediumSystemFont(11); t.textColor=dark?new Color('#cbb5a4'):new Color('#785f4d'); return t; }",
+      "function value(stack, text, size=20, colour=null) { const t=stack.addText(text); t.font=Font.boldSystemFont(size); t.textColor=colour|| (dark?Color.white():new Color('#24150d')); t.minimumScaleFactor=0.68; t.lineLimit=1; return t; }",
+      "function money(n) { return (data?.currency || '€') + Number(n || 0).toFixed(2); }",
+      "function shortDate(raw) { if(!raw) return 'Not set'; const d=new Date(raw+'T12:00:00'); return d.toLocaleDateString([], {day:'numeric',month:'short'}); }",
+      "",
+      "if (!data?.summary) {",
+      "  value(w, 'Work Payment Log', 15, accent); w.addSpacer(8); value(w, 'Open the web app', 18); w.addSpacer(4); label(w, 'Then refresh widget data in Settings.');",
+      "} else if (config.widgetFamily === 'medium') {",
+      "  const head=w.addStack(); head.centerAlignContent(); value(head, 'Pay at a glance', 15, accent); head.addSpacer(); label(head, shortDate(data.summary.paydayDate));",
+      "  w.addSpacer(15); const row=w.addStack(); row.layoutHorizontally();",
+      "  const total=row.addStack(); total.layoutVertically(); label(total,'TOTAL PAY'); value(total,money(data.summary.totalPay),19);",
+      "  row.addSpacer(14); const gross=row.addStack(); gross.layoutVertically(); label(gross,'NEXT PAYDAY'); value(gross,money(data.summary.paydayGross),19);",
+      "  row.addSpacer(14); const net=row.addStack(); net.layoutVertically(); label(net,'TAKE-HOME'); value(net,money(data.summary.takeHome),19,accent);",
+      "  w.addSpacer(); label(w, Number(data.summary.totalHours||0).toFixed(2)+' hours over '+Number(data.summary.daysWorked||0)+' worked days');",
+      "} else {",
+      "  const head=w.addStack(); head.centerAlignContent(); label(head,'ESTIMATED TAKE-HOME'); head.addSpacer(); const dot=head.addText('●'); dot.font=Font.systemFont(8); dot.textColor=accent;",
+      "  w.addSpacer(8); value(w,money(data.summary.takeHome),28,accent); label(w,'Next payday · '+shortDate(data.summary.paydayDate));",
+      "  w.addSpacer(); const bottom=w.addStack(); bottom.layoutVertically(); label(bottom,'TOTAL PAY'); value(bottom,money(data.summary.totalPay),16);",
+      "}",
+      "",
+      "if (config.runsInWidget) Script.setWidget(w); else await w.presentSmall();",
+      "Script.complete();"
+    ].join("\n");
   }
   function spendingGradient(model) {
     var total = Math.max(model.budget, model.allocated);
@@ -1987,6 +2118,7 @@
     renderTemplates();
     renderBackup();
     renderCloud();
+    renderLiveWidget();
 
     $("historyHint").textContent = (state.history || []).length
       ? (state.history.length >= WPLSync.HISTORY_LIMIT ? "The latest " : "") +
@@ -2371,7 +2503,7 @@
   }
   function toastUndo(msg,cb){var t=$("toast");t.innerHTML=esc(msg)+' <button type="button">Undo</button>';t.classList.remove("hidden");clearTimeout(toastTimer);t.querySelector("button").onclick=function(){t.classList.add("hidden");cb();};toastTimer=setTimeout(function(){t.classList.add("hidden");},6000);}
 
-  function copyWidgetLinkFallback(link, done) {
+  function copyTextFallback(link, done) {
     var input = document.createElement("textarea");
     input.value = link;
     input.setAttribute("readonly", "");
@@ -3483,14 +3615,23 @@
     $("btnOpenBackups").onclick = function () {
       if (window.WPLDesktop && window.WPLDesktop.openBackups) window.WPLDesktop.openBackups();
     };
-    $("btnCopyWidgetLink").onclick = function () {
-      var link = new URL("quicklog/", document.baseURI).href;
-      function copied() { toast("Log a day link copied"); }
+    $("btnCopyWidgetCode").onclick = function () {
+      if (!window.WPLCloud || !WPLCloud.signedIn()) { toast("Sign in to cloud sync first"); return; }
+      var token = ensureLiveWidgetToken();
+      if (!token) { toast("This browser could not create a secure widget key"); return; }
+      var code = scriptableWidgetCode(token);
+      function copied() {
+        liveWidgetCfg.enabled = true;
+        saveLiveWidgetCfg();
+        publishLiveWidget(true);
+        renderLiveWidget();
+        toast("Widget code copied");
+      }
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(link).then(copied).catch(function () { copyWidgetLinkFallback(link, copied); });
-      } else copyWidgetLinkFallback(link, copied);
+        navigator.clipboard.writeText(code).then(copied).catch(function () { copyTextFallback(code, copied); });
+      } else copyTextFallback(code, copied);
     };
-    $("btnOpenShortcuts").onclick = function () { location.href = "shortcuts://create-shortcut"; };
+    $("btnRefreshLiveWidget").onclick = function () { publishLiveWidget(true); };
     $("edHistory").onclick = function () {
       historyFocusDate = $("edDate").value;
       closeEditor();
@@ -4276,6 +4417,7 @@
       $("cloudUrl").value = c.url;
       $("cloudKey").value = c.key;
     }
+    renderLiveWidget();
   }
 
   function bindCloud() {

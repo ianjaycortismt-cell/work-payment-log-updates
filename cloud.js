@@ -236,6 +236,26 @@
     });
   }
 
+  /* The third-party iPhone widget receives only a calculated summary, never
+     the user's timesheet or Supabase session. Its random token can read this
+     one snapshot through a narrowly scoped database function. */
+  function pushWidget(accessToken, snapshot) {
+    if (!signedIn()) return Promise.reject(new Error("Sign in first"));
+    var row = { user_id: cfg.userId, access_token: String(accessToken || ""),
+      data: snapshot, updated_at: new Date().toISOString() };
+    return fetch(base() + "/rest/v1/widget_snapshots", {
+      method: "POST",
+      headers: Object.assign(headers(true), { "Prefer": "resolution=merge-duplicates,return=minimal" }),
+      body: JSON.stringify(row)
+    }).then(function (res) {
+      if (res.status === 401) return refresh().then(function () { return pushWidget(accessToken, snapshot); });
+      if (!res.ok) return res.json().catch(function () { return {}; }).then(function (json) {
+        throw new Error(asError(res, json));
+      });
+      return true;
+    });
+  }
+
   /* ---------- setup check ----------
      Runs each requirement separately so a failure names the actual problem
      instead of "something went wrong": the URL, the key, the table, then the
@@ -326,6 +346,7 @@
     completeOAuth: completeOAuth,
     signOut: signOut,
     pull: pull,
-    push: push
+    push: push,
+    pushWidget: pushWidget
   };
 });
