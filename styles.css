@@ -158,6 +158,11 @@ input,select{-webkit-user-select:text;user-select:text}
 .divider{height:1px;background:var(--line-soft);margin:13px -17px}
 .rowline{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 0;font-size:13.5px;color:var(--text-2)}
 .rowline strong{color:var(--text);font-weight:620;font-variant-numeric:tabular-nums}
+.web-backup-restore{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px;margin-top:12px}
+.web-backup-restore .field{min-width:0}
+.web-backup-restore .btn{min-height:42px}
+.widget-steps{margin:12px 0 16px;padding-left:22px;color:var(--text-2);font-size:14px;line-height:1.55}
+.widget-steps li+li{margin-top:6px}
 .big-line{font-size:15px;padding-top:9px}
 .big-line strong{font-size:18px}
 .big{font-size:26px;font-weight:700;letter-spacing:-.7px;font-variant-numeric:tabular-nums}
@@ -1265,6 +1270,8 @@ html.ios-app #updateCard{display:none!important}
   html.ios-app .chip{background:color-mix(in srgb,var(--surface) 70%,transparent);-webkit-backdrop-filter:blur(15px);backdrop-filter:blur(15px)}
 }
 @media(max-width:480px){
+  .web-backup-restore{grid-template-columns:1fr}
+  .web-backup-restore .btn{width:100%}
   html.ios-app #view-timesheet .filter-row{display:grid;grid-template-columns:1fr;gap:9px}
   html.ios-app #view-timesheet .filter-row>*{width:100%;min-width:0;max-width:none}
   html.ios-app #view-timesheet .filter-row label input{width:100%;max-width:none}

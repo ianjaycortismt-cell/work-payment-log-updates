@@ -2371,6 +2371,19 @@
   }
   function toastUndo(msg,cb){var t=$("toast");t.innerHTML=esc(msg)+' <button type="button">Undo</button>';t.classList.remove("hidden");clearTimeout(toastTimer);t.querySelector("button").onclick=function(){t.classList.add("hidden");cb();};toastTimer=setTimeout(function(){t.classList.add("hidden");},6000);}
 
+  function copyWidgetLinkFallback(link, done) {
+    var input = document.createElement("textarea");
+    input.value = link;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+    document.body.appendChild(input);
+    input.select();
+    try { document.execCommand("copy"); done(); }
+    catch (err) { toast("Copy this link: " + link); }
+    document.body.removeChild(input);
+  }
+
   var confirmCb = null;
   function confirmAsk(title, text, cb) {
     $("confirmTitle").textContent = title;
@@ -3459,9 +3472,25 @@
       saveBackupCfg();
     };
     $("btnBackupNow").onclick = function () { runBackup(true); };
+    $("btnRestoreAutoBackup").onclick = function () {
+      var id = $("stAutoBackupCopy").value;
+      if (!id) { toast("Choose a backup first"); return; }
+      getWebBackup(id).then(function (copy) {
+        if (!copy || !copy.text) { toast("That backup is no longer available"); return; }
+        applyImport(copy.text);
+      }).catch(function () { toast("Could not open that backup"); });
+    };
     $("btnOpenBackups").onclick = function () {
       if (window.WPLDesktop && window.WPLDesktop.openBackups) window.WPLDesktop.openBackups();
     };
+    $("btnCopyWidgetLink").onclick = function () {
+      var link = new URL("quicklog/", document.baseURI).href;
+      function copied() { toast("Log a day link copied"); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(copied).catch(function () { copyWidgetLinkFallback(link, copied); });
+      } else copyWidgetLinkFallback(link, copied);
+    };
+    $("btnOpenShortcuts").onclick = function () { location.href = "shortcuts://create-shortcut"; };
     $("edHistory").onclick = function () {
       historyFocusDate = $("edDate").value;
       closeEditor();
@@ -3495,11 +3524,7 @@
       saveFile("work-payment-log.csv", buildCsv(), "text/csv;charset=utf-8");
     };
     $("btnExportJson").onclick = function () {
-      saveFile("work-payment-log-backup.json",
-        JSON.stringify({ app: "Work Payment Log", saved: new Date().toISOString(), settings: state.settings,
-          settingsUpdatedAt: state.settingsUpdatedAt || 0, settingsFieldUpdatedAt: state.settingsFieldUpdatedAt || {},
-          entries: state.entries, history: state.history || [] }, null, 2),
-        "application/json");
+      saveFile("work-payment-log-backup.json", backupText(), "application/json");
     };
     $("btnImportJson").onclick = function () {
       if (window.WPLDesktop && window.WPLDesktop.openFile) {
@@ -3929,9 +3954,84 @@
     return "work-payment-log-backup-" + toISO(today()) + ".json";
   }
 
+  var WEB_BACKUP_DB = "wpl-automatic-backups";
+  var WEB_BACKUP_STORE = "snapshots";
+
+  function usesWebBackups() {
+    return !window.WPLDesktop && !window.WPLBridge && !!window.indexedDB;
+  }
+
+  function openWebBackupDb() {
+    return new Promise(function (resolve, reject) {
+      if (!usesWebBackups()) { reject(new Error("Web backup storage is unavailable")); return; }
+      var request;
+      try { request = window.indexedDB.open(WEB_BACKUP_DB, 1); }
+      catch (err) { reject(err); return; }
+      request.onupgradeneeded = function () {
+        var db = request.result;
+        if (!db.objectStoreNames.contains(WEB_BACKUP_STORE)) {
+          var store = db.createObjectStore(WEB_BACKUP_STORE, { keyPath: "id" });
+          store.createIndex("savedAt", "savedAt", { unique: false });
+        }
+      };
+      request.onsuccess = function () { resolve(request.result); };
+      request.onerror = function () { reject(request.error || new Error("Could not open backup storage")); };
+      request.onblocked = function () { reject(new Error("Backup storage is busy")); };
+    });
+  }
+
+  function listWebBackups() {
+    if (!usesWebBackups()) return Promise.resolve([]);
+    return openWebBackupDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(WEB_BACKUP_STORE, "readonly");
+        var request = tx.objectStore(WEB_BACKUP_STORE).getAll();
+        request.onsuccess = function () {
+          resolve((request.result || []).sort(function (a, b) { return b.savedAt - a.savedAt; }));
+        };
+        request.onerror = function () { reject(request.error || new Error("Could not read backups")); };
+        tx.oncomplete = function () { db.close(); };
+      });
+    });
+  }
+
+  function getWebBackup(id) {
+    return openWebBackupDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(WEB_BACKUP_STORE, "readonly");
+        var request = tx.objectStore(WEB_BACKUP_STORE).get(id);
+        request.onsuccess = function () { resolve(request.result || null); };
+        request.onerror = function () { reject(request.error || new Error("Could not read that backup")); };
+        tx.oncomplete = function () { db.close(); };
+      });
+    });
+  }
+
+  function writeWebBackup(name, backup, keep) {
+    return openWebBackupDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var savedAt = Date.now();
+        var kept = 1;
+        var tx = db.transaction(WEB_BACKUP_STORE, "readwrite");
+        var store = tx.objectStore(WEB_BACKUP_STORE);
+        store.put({ id: String(savedAt) + "-" + Math.random().toString(36).slice(2),
+          name: name, savedAt: savedAt, text: backup });
+        var request = store.getAll();
+        request.onsuccess = function () {
+          var copies = (request.result || []).sort(function (a, b) { return b.savedAt - a.savedAt; });
+          kept = Math.min(copies.length, keep);
+          copies.slice(keep).forEach(function (copy) { store.delete(copy.id); });
+        };
+        tx.oncomplete = function () { db.close(); resolve("This web app · " + kept + (kept === 1 ? " copy" : " copies")); };
+        tx.onerror = function () { var error = tx.error; db.close(); reject(error || new Error("Could not save the backup")); };
+        tx.onabort = tx.onerror;
+      });
+    });
+  }
+
   function canBackup() {
     return !!((window.WPLDesktop && window.WPLDesktop.autoBackup) ||
-              (window.WPLBridge && window.WPLBridge.autoBackup));
+              (window.WPLBridge && window.WPLBridge.autoBackup) || usesWebBackups());
   }
 
   /* Returns a promise of the path written, or "" if it could not be. */
@@ -3944,6 +4044,13 @@
     if (window.WPLBridge && window.WPLBridge.autoBackup) {
       try { return Promise.resolve(window.WPLBridge.autoBackup(name, text, keep)); }
       catch (err) { return Promise.resolve(""); }
+    }
+    if (usesWebBackups()) {
+      return writeWebBackup(name, text, keep).catch(function (err) {
+        backupCfg.lastError = err && err.message ? err.message : "Could not save the backup";
+        saveBackupCfg();
+        return "";
+      });
     }
     return Promise.resolve("");
   }
@@ -3995,12 +4102,30 @@
     var where = window.WPLDesktop ? "Documents / Work Payment Log Backups"
               : "Downloads / Work Payment Log";
     $("backupState").textContent = backupCfg.lastError?backupCfg.lastError:!canBackup()
-      ? "Automatic backups work in the installed app."
+      ? "Automatic backup storage is unavailable on this device."
       : backupCfg.lastAt
         ? "Last backup " + fmtAgo(backupCfg.lastAt) + " · " + (backupCfg.lastPath || where)
         : backupCfg.every === "off"
           ? "Automatic backups are off."
           : "No backup yet. The first one is saved after you log a day.";
+    renderWebBackupCopies();
+  }
+
+  function renderWebBackupCopies() {
+    var wrap = $("webBackupRestore"), select = $("stAutoBackupCopy");
+    if (!wrap || !select || !usesWebBackups()) {
+      if (wrap) wrap.classList.add("hidden");
+      return;
+    }
+    listWebBackups().then(function (copies) {
+      wrap.classList.toggle("hidden", !copies.length);
+      select.innerHTML = copies.map(function (copy) {
+        return '<option value="' + esc(copy.id) + '">' + esc(new Date(copy.savedAt).toLocaleString()) + "</option>";
+      }).join("");
+      if (copies.length && backupCfg.lastAt) {
+        $("backupState").textContent = "Last backup " + fmtAgo(backupCfg.lastAt) + " · saved privately in this web app";
+      }
+    }).catch(function () { wrap.classList.add("hidden"); });
   }
 
   /* ============================================================

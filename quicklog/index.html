@@ -29,9 +29,9 @@
   }
 })();
 </script>
-<link rel="manifest" href="manifest.webmanifest?v=1.11.4-cadfc153272e">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-cadfc153272e">
-<link rel="stylesheet" href="styles.css?v=1.11.4-cadfc153272e">
+<link rel="manifest" href="manifest.webmanifest?v=1.11.4-591c0983e18b">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-591c0983e18b">
+<link rel="stylesheet" href="styles.css?v=1.11.4-591c0983e18b">
 </head>
 <body>
 
@@ -844,6 +844,14 @@
               <button class="btn hidden" id="btnOpenBackups">Open the folder</button>
             </div>
 
+            <div class="web-backup-restore hidden" id="webBackupRestore">
+              <label class="field">
+                <span>Automatic copies</span>
+                <select id="stAutoBackupCopy" aria-label="Choose an automatic backup"></select>
+              </label>
+              <button class="btn" id="btnRestoreAutoBackup" type="button">Restore this copy</button>
+            </div>
+
             <div class="sect-rule"></div>
             <p class="muted tiny">Manual copies</p>
             <div class="btn-row">
@@ -853,6 +861,26 @@
             </div>
             <input type="file" id="fileInput" accept="application/json,.json" hidden>
             <p class="hint" id="ioHint">CSV opens straight in Excel or Numbers.</p>
+          </div>
+        </details>
+
+        <details class="card sect" id="sectIphoneWidget">
+          <summary class="sect-head">
+            <span class="sect-ic">▣</span>
+            <span class="sect-name">iPhone widget</span>
+            <span class="sect-sum"><span class="pill">square</span></span>
+          </summary>
+          <div class="sect-body">
+            <p class="hint">The iPhone web app can use a small Shortcuts widget. Tapping it opens Work Payment Log straight on Log a day.</p>
+            <ol class="widget-steps">
+              <li>Copy the Log a day link below.</li>
+              <li>In Shortcuts, make a shortcut with the <b>Open URLs</b> action and paste the link.</li>
+              <li>Add the small Shortcuts widget to your Home Screen and choose that shortcut.</li>
+            </ol>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="btnCopyWidgetLink" type="button">Copy Log a day link</button>
+              <button class="btn" id="btnOpenShortcuts" type="button">Open Shortcuts</button>
+            </div>
           </div>
         </details>
 
@@ -1154,19 +1182,19 @@
   </div>
 </div>
 
-<script src="seed.js?v=1.11.4-cadfc153272e"></script>
-<script src="sync-core.js?v=1.11.4-cadfc153272e"></script>
-<script src="cloud.js?v=1.11.4-cadfc153272e"></script>
-<script src="app.js?v=1.11.4-cadfc153272e"></script>
+<script src="seed.js?v=1.11.4-591c0983e18b"></script>
+<script src="sync-core.js?v=1.11.4-591c0983e18b"></script>
+<script src="cloud.js?v=1.11.4-591c0983e18b"></script>
+<script src="app.js?v=1.11.4-591c0983e18b"></script>
 <script>
 if ((location.protocol === "https:" || location.hostname === "localhost") && "serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("service-worker.js?v=1.11.4-cadfc153272e").then(function (registration) {
+    navigator.serviceWorker.register("service-worker.js?v=1.11.4-591c0983e18b").then(function (registration) {
       registration.update().catch(function () {});
     }).catch(function () {});
     navigator.serviceWorker.addEventListener("controllerchange", function () {
       try {
-        var reloadKey = "wpl-sw-reloaded-1.11.4-cadfc153272e";
+        var reloadKey = "wpl-sw-reloaded-1.11.4-591c0983e18b";
         if (sessionStorage.getItem(reloadKey) === "1") return;
         sessionStorage.setItem(reloadKey, "1");
         location.reload();
