@@ -811,6 +811,11 @@ html.dark[data-app-color="orange"] .hero{background:linear-gradient(135deg,#8a2f
 .sub > summary::before{content:"+";font-size:14px;line-height:1}
 .sub[open] > summary::before{content:"–"}
 .sub > *:not(summary){margin-top:10px}
+.iphone-widget-preview-shell{
+  width:min(100%,364px);aspect-ratio:364/170;margin:4px auto 14px;border-radius:22px;
+  overflow:hidden;background:#160d07;box-shadow:0 14px 30px -20px #000;
+}
+.iphone-widget-preview-shell iframe{display:block;width:100%;height:100%;border:0;background:#160d07}
 
 .sect-danger .sect-ic{background:var(--danger-soft,var(--line-soft));color:var(--danger)}
 .app-colour-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:13px 0}

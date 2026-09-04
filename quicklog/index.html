@@ -29,9 +29,9 @@
   }
 })();
 </script>
-<link rel="manifest" href="manifest.webmanifest?v=1.11.4-830a29f43797">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-830a29f43797">
-<link rel="stylesheet" href="styles.css?v=1.11.4-830a29f43797">
+<link rel="manifest" href="manifest.webmanifest?v=1.11.4-299185d5e961">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-299185d5e961">
+<link rel="stylesheet" href="styles.css?v=1.11.4-299185d5e961">
 </head>
 <body>
 
@@ -871,19 +871,26 @@
             <span class="sect-sum"><span class="pill" id="widgetPill">setup</span></span>
           </summary>
           <div class="sect-body">
-            <p class="hint">Show total pay, your next payday and estimated take-home directly on the Home Screen. This uses the free Scriptable app because Apple does not let a web app supply its own live widget.</p>
+            <p class="hint">Your pay widget is built into Work Payment Log. It uses the same cloud data as this app and stays read-only.</p>
+            <div class="iphone-widget-preview-shell">
+              <iframe id="webWidgetPreview" title="Your iPhone widget preview" src="widget.html" loading="lazy"></iframe>
+            </div>
             <ol class="widget-steps">
-              <li><a href="https://apps.apple.com/app/scriptable/id1405459188" target="_blank" rel="noopener">Install Scriptable</a> from the App Store.</li>
-              <li>Tap <b>Copy live widget code</b>, create a new script in Scriptable and paste it. Name it <b>Work Payment Log</b>.</li>
-              <li>Run the script to preview the small, medium or large design. Home Screen widgets are supplied by Scriptable, with Work Payment Log selected as the script.</li>
+              <li>Install <a href="https://apps.apple.com/app/widget-web-26/id1522169352" target="_blank" rel="noopener">Widget Web 26</a>.</li>
+              <li>Tap <b>Copy iPhone widget link</b> and add that link inside Widget Web.</li>
+              <li>Add its Home Screen widget. Work Payment Log fills the available size automatically.</li>
             </ol>
             <div class="rowline"><span id="widgetState">Sign in to cloud sync first.</span></div>
             <div class="btn-row">
-              <button class="btn btn-primary" id="btnCopyWidgetCode" type="button">Copy live widget code</button>
-              <button class="btn" id="btnCopyWebWidgetLink" type="button">Copy Widget Web link</button>
+              <a class="btn" href="https://apps.apple.com/app/widget-web-26/id1522169352" target="_blank" rel="noopener">Get widget app</a>
+              <button class="btn btn-primary" id="btnCopyWebWidgetLink" type="button">Copy iPhone widget link</button>
               <button class="btn" id="btnRefreshLiveWidget" type="button">Refresh widget data</button>
             </div>
-            <p class="hint"><b>Alternative for iOS 26:</b> <a href="https://apps.apple.com/app/widget-web-26/id1522169352" target="_blank" rel="noopener">Widget Web 26</a> can display the secure link above as a real live Home Screen widget without running a Scriptable preview.</p>
+            <details class="sub">
+              <summary>Use Scriptable instead</summary>
+              <p class="hint">If Scriptable works properly on your iPhone, copy the code below into a script named Work Payment Log.</p>
+              <button class="btn" id="btnCopyWidgetCode" type="button">Copy Scriptable code</button>
+            </details>
           </div>
         </details>
 
@@ -1185,19 +1192,19 @@
   </div>
 </div>
 
-<script src="seed.js?v=1.11.4-830a29f43797"></script>
-<script src="sync-core.js?v=1.11.4-830a29f43797"></script>
-<script src="cloud.js?v=1.11.4-830a29f43797"></script>
-<script src="app.js?v=1.11.4-830a29f43797"></script>
+<script src="seed.js?v=1.11.4-299185d5e961"></script>
+<script src="sync-core.js?v=1.11.4-299185d5e961"></script>
+<script src="cloud.js?v=1.11.4-299185d5e961"></script>
+<script src="app.js?v=1.11.4-299185d5e961"></script>
 <script>
 if ((location.protocol === "https:" || location.hostname === "localhost") && "serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("service-worker.js?v=1.11.4-830a29f43797").then(function (registration) {
+    navigator.serviceWorker.register("service-worker.js?v=1.11.4-299185d5e961").then(function (registration) {
       registration.update().catch(function () {});
     }).catch(function () {});
     navigator.serviceWorker.addEventListener("controllerchange", function () {
       try {
-        var reloadKey = "wpl-sw-reloaded-1.11.4-830a29f43797";
+        var reloadKey = "wpl-sw-reloaded-1.11.4-299185d5e961";
         if (sessionStorage.getItem(reloadKey) === "1") return;
         sessionStorage.setItem(reloadKey, "1");
         location.reload();

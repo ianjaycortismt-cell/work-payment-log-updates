@@ -1838,6 +1838,17 @@
     pill.textContent = liveWidgetCfg.enabled && liveWidgetCfg.lastAt ? "live" : "setup";
     pill.className = "pill" + (liveWidgetCfg.enabled && liveWidgetCfg.lastAt ? " pill-good" : "");
     if (button) button.disabled = !signedIn || !liveWidgetCfg.enabled;
+    var webButton = $("btnCopyWebWidgetLink"), preview = $("webWidgetPreview");
+    if (webButton) webButton.disabled = !signedIn;
+    if (preview) {
+      var previewLink = new URL("widget.html", document.baseURI);
+      if (liveWidgetCfg.token) previewLink.searchParams.set("token", liveWidgetCfg.token);
+      if (liveWidgetCfg.lastAt) previewLink.searchParams.set("v", String(liveWidgetCfg.lastAt));
+      if (preview.dataset.src !== previewLink.href) {
+        preview.dataset.src = previewLink.href;
+        preview.src = previewLink.href;
+      }
+    }
   }
 
   function scriptableWidgetCode(token) {
