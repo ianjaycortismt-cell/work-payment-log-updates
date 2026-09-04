@@ -2199,6 +2199,7 @@
     $("edMultiplierWrap").classList.toggle("hidden",$("edRateType").value!=="custom");
     $("edSave").disabled = false;
     updatePreview();
+    document.body.classList.add("editor-open");
     $("scrim").classList.remove("hidden");
     $("sheet").classList.remove("hidden");
   }
@@ -2212,6 +2213,7 @@
   function closeEditor() {
     $("scrim").classList.add("hidden");
     $("sheet").classList.add("hidden");
+    document.body.classList.remove("editor-open");
     editingId = null;
     savingEditor = false;
     $("edSave").disabled = false;

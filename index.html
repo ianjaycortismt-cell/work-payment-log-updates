@@ -24,9 +24,9 @@
   }
 })();
 </script>
-<link rel="manifest" href="manifest.webmanifest?v=1.11.4-17c60eac5ac3">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-17c60eac5ac3">
-<link rel="stylesheet" href="styles.css?v=1.11.4-17c60eac5ac3">
+<link rel="manifest" href="manifest.webmanifest?v=1.11.4-db17982849ef">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-db17982849ef">
+<link rel="stylesheet" href="styles.css?v=1.11.4-db17982849ef">
 </head>
 <body>
 
@@ -1050,7 +1050,7 @@
       <select id="edType"></select>
     </label>
 
-    <div class="time-pair">
+    <div class="time-pair editor-job-pair">
       <label class="field"><span>Employer</span><select id="edEmployer"></select></label>
       <label class="field"><span>Shift template</span><select id="edTemplate"><option value="">Choose a template</option></select></label>
     </div>
@@ -1065,7 +1065,7 @@
       </select>
     </label>
 
-    <div class="time-pair">
+    <div class="time-pair editor-clock-pair">
       <label class="field">
         <span>Start</span>
         <input type="time" id="edStart">
@@ -1076,12 +1076,12 @@
       </label>
     </div>
 
-    <div class="time-pair">
+    <div class="time-pair editor-rate-kind-pair">
       <label class="field"><span>Pay rate</span><select id="edRateType"><option value="standard">Normal rate</option><option value="overtime">Overtime (1.5×)</option><option value="night">Night (1.25×)</option><option value="sunday">Sunday (2×)</option><option value="public">Public holiday (2×)</option><option value="custom">Custom multiplier</option></select></label>
       <label class="field hidden" id="edMultiplierWrap"><span>Multiplier</span><input type="number" id="edMultiplier" min="0" max="10" step="0.05" inputmode="decimal" value="1"></label>
     </div>
 
-    <div class="time-pair">
+    <div class="time-pair editor-pay-pair">
       <label class="field">
         <span>Hourly rate for this shift</span>
         <input type="number" id="edRate" min="0" step="0.01" inputmode="decimal">
@@ -1117,7 +1117,7 @@
       <span>Notes</span>
       <input type="text" id="edNotes" placeholder="Optional, e.g. Left 15 min early" maxlength="120">
     </label>
-    <div class="time-pair" id="edRepeatFields">
+    <div class="time-pair editor-repeat-pair" id="edRepeatFields">
       <label class="field"><span>Repeat</span><select id="edRepeat"><option value="none">Do not repeat</option><option value="weekly">Every week</option></select></label>
       <label class="field hidden" id="edRepeatWeeksWrap"><span>Weeks to add</span><input type="number" id="edRepeatWeeks" min="1" max="52" step="1" inputmode="numeric" value="4"></label>
     </div>
@@ -1149,14 +1149,14 @@
   </div>
 </div>
 
-<script src="seed.js?v=1.11.4-17c60eac5ac3"></script>
-<script src="sync-core.js?v=1.11.4-17c60eac5ac3"></script>
-<script src="cloud.js?v=1.11.4-17c60eac5ac3"></script>
-<script src="app.js?v=1.11.4-17c60eac5ac3"></script>
+<script src="seed.js?v=1.11.4-db17982849ef"></script>
+<script src="sync-core.js?v=1.11.4-db17982849ef"></script>
+<script src="cloud.js?v=1.11.4-db17982849ef"></script>
+<script src="app.js?v=1.11.4-db17982849ef"></script>
 <script>
 if ((location.protocol === "https:" || location.hostname === "localhost") && "serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("service-worker.js?v=1.11.4-17c60eac5ac3").catch(function () {});
+    navigator.serviceWorker.register("service-worker.js?v=1.11.4-db17982849ef").catch(function () {});
   });
 }
 </script>
