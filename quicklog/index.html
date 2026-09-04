@@ -8,9 +8,25 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Work Pay">
 <title>Work Payment Log</title>
-<link rel="manifest" href="manifest.webmanifest?v=1.11.4-bad2887afe2e">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-bad2887afe2e">
-<link rel="stylesheet" href="styles.css?v=1.11.4-bad2887afe2e">
+<script>
+/* Apply the iPhone app shell before the first paint. The native iOS wrapper
+   adds the same class through its bridge; Home Screen web apps need to detect
+   standalone mode themselves or they fall back to the browser-looking UI. */
+(function () {
+  var nav = window.navigator || {};
+  var isApplePhone = /iPhone|iPad|iPod/.test(nav.userAgent || "") ||
+    (nav.platform === "MacIntel" && Number(nav.maxTouchPoints) > 1);
+  var isStandalone = nav.standalone === true ||
+    (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
+  var isLayoutPreview = new URLSearchParams(window.location.search).has("ios-app-preview");
+  if ((isApplePhone && isStandalone) || isLayoutPreview) {
+    document.documentElement.classList.add("ios-app", "ios-pwa", "ios-liquid-glass");
+  }
+})();
+</script>
+<link rel="manifest" href="manifest.webmanifest?v=1.11.4-17c60eac5ac3">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-17c60eac5ac3">
+<link rel="stylesheet" href="styles.css?v=1.11.4-17c60eac5ac3">
 </head>
 <body>
 
@@ -1133,14 +1149,14 @@
   </div>
 </div>
 
-<script src="seed.js?v=1.11.4-bad2887afe2e"></script>
-<script src="sync-core.js?v=1.11.4-bad2887afe2e"></script>
-<script src="cloud.js?v=1.11.4-bad2887afe2e"></script>
-<script src="app.js?v=1.11.4-bad2887afe2e"></script>
+<script src="seed.js?v=1.11.4-17c60eac5ac3"></script>
+<script src="sync-core.js?v=1.11.4-17c60eac5ac3"></script>
+<script src="cloud.js?v=1.11.4-17c60eac5ac3"></script>
+<script src="app.js?v=1.11.4-17c60eac5ac3"></script>
 <script>
 if ((location.protocol === "https:" || location.hostname === "localhost") && "serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("service-worker.js?v=1.11.4-bad2887afe2e").catch(function () {});
+    navigator.serviceWorker.register("service-worker.js?v=1.11.4-17c60eac5ac3").catch(function () {});
   });
 }
 </script>
