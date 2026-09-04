@@ -4432,8 +4432,9 @@
   try {
     var launchParams = new URLSearchParams(location.search);
     var quickLogMode = launchParams.get("quicklog");
-    quickLogRequested = quickLogMode === "1" || quickLogMode === "launcher";
-    quickLogLauncher = quickLogMode === "launcher";
+    var quickLogPath = /\/quicklog\/?$/.test(location.pathname);
+    quickLogRequested = quickLogPath || quickLogMode === "1" || quickLogMode === "launcher";
+    quickLogLauncher = quickLogPath || quickLogMode === "launcher";
     if (quickLogRequested && !quickLogLauncher) {
       launchParams.delete("quicklog");
       var cleanQuery = launchParams.toString();
