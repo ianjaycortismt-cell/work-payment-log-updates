@@ -4071,6 +4071,8 @@
         toast(backupCfg.lastError||"Could not write the backup");
       }
       renderBackup();
+      if ($("healthBackup")) renderDataHealth();
+      if ($("ovBackupStatus")) $("ovBackupStatus").textContent = backupCfg.lastAt ? fmtAgo(backupCfg.lastAt) : "Not yet";
     });
   }
 
