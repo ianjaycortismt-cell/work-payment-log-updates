@@ -1841,13 +1841,14 @@
     var webButton = $("btnCopyWebWidgetLink"), preview = $("webWidgetPreview");
     if (webButton) webButton.disabled = !signedIn;
     if (preview) {
-      var previewLink = new URL("widget.html", document.baseURI);
-      if (liveWidgetCfg.token) previewLink.searchParams.set("token", liveWidgetCfg.token);
-      if (liveWidgetCfg.lastAt) previewLink.searchParams.set("v", String(liveWidgetCfg.lastAt));
-      if (preview.dataset.src !== previewLink.href) {
-        preview.dataset.src = previewLink.href;
-        preview.src = previewLink.href;
-      }
+      var sample = widgetSnapshot(), summary = sample.summary || {};
+      $("widgetPreviewTakeHome").textContent = money(summary.takeHome || 0);
+      $("widgetPreviewTotal").textContent = money(summary.totalPay || 0);
+      $("widgetPreviewGross").textContent = money(summary.paydayGross || 0);
+      $("widgetPreviewHours").textContent = Number(summary.totalHours || 0).toFixed(2);
+      $("widgetPreviewPayday").textContent = summary.paydayDate
+        ? "Next payday · " + fmtDateShort(new Date(summary.paydayDate + "T12:00:00"))
+        : "Next payday not set";
     }
   }
 

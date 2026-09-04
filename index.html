@@ -29,9 +29,9 @@
   }
 })();
 </script>
-<link rel="manifest" href="manifest.webmanifest?v=1.11.4-299185d5e961">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-299185d5e961">
-<link rel="stylesheet" href="styles.css?v=1.11.4-299185d5e961">
+<link rel="manifest" href="manifest.webmanifest?v=1.11.4-76eb2276de53">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-76eb2276de53">
+<link rel="stylesheet" href="styles.css?v=1.11.4-76eb2276de53">
 </head>
 <body>
 
@@ -872,8 +872,22 @@
           </summary>
           <div class="sect-body">
             <p class="hint">Your pay widget is built into Work Payment Log. It uses the same cloud data as this app and stays read-only.</p>
-            <div class="iphone-widget-preview-shell">
-              <iframe id="webWidgetPreview" title="Your iPhone widget preview" src="widget.html" loading="lazy"></iframe>
+            <div class="iphone-widget-preview" id="webWidgetPreview" role="img" aria-label="Your iPhone widget preview">
+              <div class="iw-head">
+                <span class="iw-mark">€</span>
+                <strong>Work Payment Log</strong>
+                <span class="iw-live">Preview</span>
+              </div>
+              <div class="iw-main">
+                <span>Estimated take-home</span>
+                <strong id="widgetPreviewTakeHome">€0.00</strong>
+                <small id="widgetPreviewPayday">Next payday not set</small>
+              </div>
+              <div class="iw-metrics">
+                <span>Total pay<strong id="widgetPreviewTotal">€0.00</strong></span>
+                <span>Next payday<strong id="widgetPreviewGross">€0.00</strong></span>
+                <span>Hours<strong id="widgetPreviewHours">0.00</strong></span>
+              </div>
             </div>
             <ol class="widget-steps">
               <li>Install <a href="https://apps.apple.com/app/widget-web-26/id1522169352" target="_blank" rel="noopener">Widget Web 26</a>.</li>
@@ -1192,19 +1206,19 @@
   </div>
 </div>
 
-<script src="seed.js?v=1.11.4-299185d5e961"></script>
-<script src="sync-core.js?v=1.11.4-299185d5e961"></script>
-<script src="cloud.js?v=1.11.4-299185d5e961"></script>
-<script src="app.js?v=1.11.4-299185d5e961"></script>
+<script src="seed.js?v=1.11.4-76eb2276de53"></script>
+<script src="sync-core.js?v=1.11.4-76eb2276de53"></script>
+<script src="cloud.js?v=1.11.4-76eb2276de53"></script>
+<script src="app.js?v=1.11.4-76eb2276de53"></script>
 <script>
 if ((location.protocol === "https:" || location.hostname === "localhost") && "serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("service-worker.js?v=1.11.4-299185d5e961").then(function (registration) {
+    navigator.serviceWorker.register("service-worker.js?v=1.11.4-76eb2276de53").then(function (registration) {
       registration.update().catch(function () {});
     }).catch(function () {});
     navigator.serviceWorker.addEventListener("controllerchange", function () {
       try {
-        var reloadKey = "wpl-sw-reloaded-1.11.4-299185d5e961";
+        var reloadKey = "wpl-sw-reloaded-1.11.4-76eb2276de53";
         if (sessionStorage.getItem(reloadKey) === "1") return;
         sessionStorage.setItem(reloadKey, "1");
         location.reload();
