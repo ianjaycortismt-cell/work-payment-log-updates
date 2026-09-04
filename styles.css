@@ -1019,6 +1019,7 @@ html.ios-app #updateCard{display:none!important}
   html.ios-app body{
     -webkit-text-size-adjust:100%;text-size-adjust:100%;
     -webkit-touch-callout:none;font-size:16px;
+    position:fixed;inset:0;overflow:hidden;
   }
   html.ios-app body{background:transparent}
   html.ios-app .main{height:100dvh;min-height:0;background:var(--bg)}
@@ -1039,6 +1040,13 @@ html.ios-app #updateCard{display:none!important}
   html.ios-app .scroll::-webkit-scrollbar,
   html.ios-app .sheet-body::-webkit-scrollbar{display:none}
   html.ios-app .view{gap:12px}
+  html.ios-app .view,
+  html.ios-app .card,
+  html.ios-app .field,
+  html.ios-app .time-pair,
+  html.ios-app .filter-row,
+  html.ios-app .transaction-form,
+  html.ios-app .mini-add-grid{min-width:0;max-width:100%}
   html.ios-app .card,
   html.ios-app .quick-btn,
   html.ios-app .rows,
@@ -1060,7 +1068,20 @@ html.ios-app #updateCard{display:none!important}
   html.ios-app input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
   html.ios-app select,
   html.ios-app textarea{
-    font-size:16px!important;
+    box-sizing:border-box;display:block;width:100%!important;min-width:0!important;
+    max-width:100%!important;font-size:16px!important;
+  }
+  html.ios-app input[type="date"],
+  html.ios-app input[type="time"]{
+    min-inline-size:0!important;inline-size:100%!important;
+  }
+  html.ios-app input[type="date"]::-webkit-date-and-time-value,
+  html.ios-app input[type="time"]::-webkit-date-and-time-value{
+    min-width:0;margin:0;text-align:left;
+  }
+  html.ios-app input[type="date"]::-webkit-calendar-picker-indicator,
+  html.ios-app input[type="time"]::-webkit-calendar-picker-indicator{
+    flex:0 0 auto;margin-left:auto;padding:0;
   }
   html.ios-app .field input,
   html.ios-app .field select,
@@ -1098,7 +1119,10 @@ html.ios-app #updateCard{display:none!important}
   }
   html.ios-app .sheet-head{padding:14px 16px 7px}
   html.ios-app .sheet-head h2{font-size:20px}
-  html.ios-app .sheet-body{padding:9px 16px 6px;gap:13px;overscroll-behavior:contain}
+  html.ios-app .sheet-body{
+    padding:9px 16px 6px;gap:13px;overflow-x:hidden;
+    overscroll-behavior:none;touch-action:pan-y;-webkit-overflow-scrolling:touch;
+  }
   html.ios-app .sheet-foot{padding:12px 16px calc(12px + var(--safe-b));background:color-mix(in srgb,var(--surface) 90%,transparent)}
   html.ios-app .sheet-foot .btn{min-height:48px;font-size:16px;border-radius:14px}
   html.ios-app .icon-btn,
@@ -1114,7 +1138,7 @@ html.ios-app #updateCard{display:none!important}
   html.ios-app .editor-rate-kind-pair,
   html.ios-app .editor-pay-pair,
   html.ios-app .editor-repeat-pair{grid-template-columns:1fr}
-  html.ios-app .editor-clock-pair{gap:9px}
+  html.ios-app .editor-clock-pair{grid-template-columns:1fr;gap:13px}
   html.ios-app .sheet-body{padding-left:14px;padding-right:14px}
   html.ios-app .sheet-foot{padding-left:14px;padding-right:14px}
   html.ios-app .transaction-form{display:grid;grid-template-columns:1fr;gap:10px}
