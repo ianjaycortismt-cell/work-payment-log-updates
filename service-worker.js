@@ -1,4 +1,4 @@
-const CACHE = "work-payment-log-1.11.4-9f2f802689e0";
+const CACHE = "work-payment-log-1.11.4-44649c63f748";
 const SHELL = [
   "./",
   "./index.html",
@@ -8,6 +8,8 @@ const SHELL = [
   "./cloud.js",
   "./app.js",
   "./manifest.webmanifest",
+  "./quick-log.html",
+  "./quick-log.webmanifest",
   "./icons/icon-180.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png"

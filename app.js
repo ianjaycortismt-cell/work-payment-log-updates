@@ -4428,10 +4428,13 @@
      flag immediately so refreshing or reopening Safari does not keep showing
      the editor, then open today's entry with the user's saved defaults. */
   var quickLogRequested = false;
+  var quickLogLauncher = false;
   try {
     var launchParams = new URLSearchParams(location.search);
-    quickLogRequested = launchParams.get("quicklog") === "1";
-    if (quickLogRequested) {
+    var quickLogMode = launchParams.get("quicklog");
+    quickLogRequested = quickLogMode === "1" || quickLogMode === "launcher";
+    quickLogLauncher = quickLogMode === "launcher";
+    if (quickLogRequested && !quickLogLauncher) {
       launchParams.delete("quicklog");
       var cleanQuery = launchParams.toString();
       history.replaceState(null, document.title,
@@ -4465,7 +4468,14 @@
     /* Leaving: send the pending edit now rather than losing the timer when the
        phone suspends the app. Returning: pick up the other device. */
     if (document.hidden) flushCloudSoon();
-    else { cloudSync(false); runFriendlyReminders(); }
+    else {
+      cloudSync(false);
+      runFriendlyReminders();
+      /* The separate Log Work Day Home Screen launcher may be resumed instead
+         of reloaded by iOS. Reopen today's form whenever that launcher comes
+         back to the foreground, including from the Action Button. */
+      if (quickLogLauncher && state.settings.onboarded) setTimeout(openTodayEditor, 80);
+    }
   });
   window.addEventListener("online", function () { cloudSync(false); });
   window.WPLOpenToday = openTodayEditor;
