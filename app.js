@@ -4429,7 +4429,12 @@
      the editor, then open today's entry with the user's saved defaults. */
   var quickLogRequested = false;
   var quickLogLauncher = false;
+  var iPhoneStandaloneQuickLog = false;
   try {
+    /* iOS may discard the requested path when webapp:// foregrounds an
+       already-running Home Screen app. In standalone mode, make logging today
+       the launch/resume destination so the Action Button remains dependable. */
+    iPhoneStandaloneQuickLog = window.navigator && window.navigator.standalone === true;
     var launchParams = new URLSearchParams(location.search);
     var quickLogMode = launchParams.get("quicklog");
     var quickLogPath = /\/quicklog\/?$/.test(location.pathname);
@@ -4453,7 +4458,7 @@
   if (migrationApplied) save();
   syncWorkReminderSchedule(true);
   if (!state.settings.onboarded) openOnboarding(false);
-  else if (quickLogRequested) setTimeout(openTodayEditor, 80);
+  else if (quickLogRequested || iPhoneStandaloneQuickLog) setTimeout(openTodayEditor, 80);
   backupIfDue();
   setInterval(backupIfDue, 3600e3);
   setInterval(function(){renderClockAction();},30000);
@@ -4475,7 +4480,9 @@
       /* The separate Log Work Day Home Screen launcher may be resumed instead
          of reloaded by iOS. Reopen today's form whenever that launcher comes
          back to the foreground, including from the Action Button. */
-      if (quickLogLauncher && state.settings.onboarded) setTimeout(openTodayEditor, 80);
+      if ((quickLogLauncher || iPhoneStandaloneQuickLog) && state.settings.onboarded) {
+        setTimeout(openTodayEditor, 80);
+      }
     }
   });
   window.addEventListener("online", function () { cloudSync(false); });
