@@ -4424,6 +4424,20 @@
   bindPageSwipes();
   bindFabAutoHide();
   showView("overview");
+  /* The iPhone Action Button shortcut opens this HTTPS deep link. Consume the
+     flag immediately so refreshing or reopening Safari does not keep showing
+     the editor, then open today's entry with the user's saved defaults. */
+  var quickLogRequested = false;
+  try {
+    var launchParams = new URLSearchParams(location.search);
+    quickLogRequested = launchParams.get("quicklog") === "1";
+    if (quickLogRequested) {
+      launchParams.delete("quicklog");
+      var cleanQuery = launchParams.toString();
+      history.replaceState(null, document.title,
+        location.pathname + (cleanQuery ? "?" + cleanQuery : "") + location.hash);
+    }
+  } catch (err) { /* old WebViews simply use the normal launch screen */ }
   /* Supabase returns browser sign-in tokens in the URL fragment. Consume them
      once, then remove them so they are never left in screenshots or history. */
   if (location.hash && /(?:^|[&#])(access_token|error)=/.test(location.hash)) {
@@ -4435,6 +4449,7 @@
   if (migrationApplied) save();
   syncWorkReminderSchedule(true);
   if (!state.settings.onboarded) openOnboarding(false);
+  else if (quickLogRequested) setTimeout(openTodayEditor, 80);
   backupIfDue();
   setInterval(backupIfDue, 3600e3);
   setInterval(function(){renderClockAction();},30000);
