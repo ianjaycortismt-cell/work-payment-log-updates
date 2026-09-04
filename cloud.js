@@ -287,7 +287,8 @@
                 ? { ok: true, step: "Google sign-in", note: "Enabled on your project" }
                 : { ok: false, step: "Google sign-in",
                     note: "Not enabled yet — turn Google on in Authentication → Sign In / " +
-                          "Providers, and add worklog://auth under URL Configuration." });
+                          "Providers. In URL Configuration, use your live web app as the Site URL " +
+                          "and keep worklog://auth as an additional redirect for native apps." });
             })
             .catch(function () { /* not fatal */ }));
 

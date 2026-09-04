@@ -29,9 +29,9 @@
   }
 })();
 </script>
-<link rel="manifest" href="manifest.webmanifest?v=1.11.4-c8a1f6024efb">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-c8a1f6024efb">
-<link rel="stylesheet" href="styles.css?v=1.11.4-c8a1f6024efb">
+<link rel="manifest" href="manifest.webmanifest?v=1.11.4-cadfc153272e">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-cadfc153272e">
+<link rel="stylesheet" href="styles.css?v=1.11.4-cadfc153272e">
 </head>
 <body>
 
@@ -1154,19 +1154,19 @@
   </div>
 </div>
 
-<script src="seed.js?v=1.11.4-c8a1f6024efb"></script>
-<script src="sync-core.js?v=1.11.4-c8a1f6024efb"></script>
-<script src="cloud.js?v=1.11.4-c8a1f6024efb"></script>
-<script src="app.js?v=1.11.4-c8a1f6024efb"></script>
+<script src="seed.js?v=1.11.4-cadfc153272e"></script>
+<script src="sync-core.js?v=1.11.4-cadfc153272e"></script>
+<script src="cloud.js?v=1.11.4-cadfc153272e"></script>
+<script src="app.js?v=1.11.4-cadfc153272e"></script>
 <script>
 if ((location.protocol === "https:" || location.hostname === "localhost") && "serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("service-worker.js?v=1.11.4-c8a1f6024efb").then(function (registration) {
+    navigator.serviceWorker.register("service-worker.js?v=1.11.4-cadfc153272e").then(function (registration) {
       registration.update().catch(function () {});
     }).catch(function () {});
     navigator.serviceWorker.addEventListener("controllerchange", function () {
       try {
-        var reloadKey = "wpl-sw-reloaded-1.11.4-c8a1f6024efb";
+        var reloadKey = "wpl-sw-reloaded-1.11.4-cadfc153272e";
         if (sessionStorage.getItem(reloadKey) === "1") return;
         sessionStorage.setItem(reloadKey, "1");
         location.reload();
