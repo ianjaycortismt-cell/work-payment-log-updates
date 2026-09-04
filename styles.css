@@ -1009,6 +1009,25 @@ html.dark[data-app-color="orange"] .hero{background:linear-gradient(135deg,#8a2f
   .tab em{font-size:8px;letter-spacing:0}.tab .ic{font-size:15px}
   .transaction-form{grid-template-columns:1fr}
   .transaction-form .field,.transaction-form .btn{grid-column:1;width:100%;min-width:0}
+
+  /* iOS date and time controls otherwise stretch to the full row. Keep every
+     temporal control the same compact width so their backgrounds match. */
+  html.iphone-web{--phone-temporal-width:160px}
+  html.iphone-web input[type="date"],
+  html.iphone-web input[type="time"]{
+    width:var(--phone-temporal-width)!important;
+    min-width:var(--phone-temporal-width)!important;
+    max-width:var(--phone-temporal-width)!important;
+    inline-size:var(--phone-temporal-width)!important;
+  }
+  html.iphone-web .editor-clock-pair{
+    grid-template-columns:repeat(2,var(--phone-temporal-width));
+    justify-content:space-between;column-gap:0;
+  }
+}
+
+@media(max-width:360px){
+  html.iphone-web{--phone-temporal-width:146px}
 }
 
 /* ============================================================
