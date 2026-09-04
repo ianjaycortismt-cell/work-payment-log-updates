@@ -1,4 +1,4 @@
-const CACHE = "work-payment-log-1.11.4-476f6394d4d3";
+const CACHE = "work-payment-log-1.11.4-0804d8fa7b9f";
 const SHELL = [
   "./",
   "./index.html",

@@ -977,18 +977,11 @@ html.dark[data-app-color="orange"] .hero{background:linear-gradient(135deg,#8a2f
 @media(max-width:480px){
   .toolbar{align-items:stretch;flex-direction:column}.toolbar .select{width:100%}
   .view,.card,.field,.time-pair,.filter-row,.transaction-form,.mini-add-grid{min-width:0;max-width:100%}
-  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),select,textarea{
-    box-sizing:border-box;display:block;width:100%;min-width:0;max-width:100%;
-  }
+  .field input,.field select{box-sizing:border-box;min-width:0;max-width:100%}
   input[type="date"],input[type="time"]{min-inline-size:0;inline-size:100%}
   input[type="date"]::-webkit-date-and-time-value,
   input[type="time"]::-webkit-date-and-time-value{min-width:0;margin:0;text-align:left}
   .sheet-body{overflow-x:hidden;overscroll-behavior:none;touch-action:pan-y}
-  .sheet .editor-job-pair,
-  .sheet .editor-clock-pair,
-  .sheet .editor-rate-kind-pair,
-  .sheet .editor-pay-pair,
-  .sheet .editor-repeat-pair{grid-template-columns:1fr}
   /* A tall sticky filter covered the reports on phones, and the one-line
      preset strip left its selected button half outside the screen. */
   #view-analytics .analytics-toolbar{position:static;top:auto;padding:10px}

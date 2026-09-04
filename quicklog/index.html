@@ -9,29 +9,23 @@
 <meta name="apple-mobile-web-app-title" content="Work Pay">
 <title>Work Payment Log</title>
 <script>
-/* Apply the iPhone app shell before the first paint. The native iOS wrapper
-   adds the same class through its bridge; Home Screen web apps need to detect
-   standalone mode themselves or they fall back to the browser-looking UI. */
+/* Keep iPhone controls inside their rows while using the same compact mobile
+   layout as Android. */
 (function () {
   var nav = window.navigator || {};
   var isApplePhone = /iPhone|iPad|iPod/.test(nav.userAgent || "") ||
     (nav.platform === "MacIntel" && Number(nav.maxTouchPoints) > 1);
-  var isStandalone = nav.standalone === true ||
-    (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
-  var isLayoutPreview = new URLSearchParams(window.location.search).has("ios-app-preview");
-  if (isApplePhone || isLayoutPreview) {
-    document.documentElement.classList.add("ios-app", "ios-liquid-glass");
-    if (isStandalone) document.documentElement.classList.add("ios-pwa");
-    if (isLayoutPreview) {
-      document.documentElement.style.setProperty("--safe-t", "62px");
-      document.documentElement.style.setProperty("--safe-b", "34px");
-    }
+  var isPhonePreview = new URLSearchParams(window.location.search).has("iphone-app-preview");
+  if (isApplePhone || isPhonePreview) document.documentElement.classList.add("iphone-web");
+  if (isPhonePreview) {
+    document.documentElement.style.setProperty("--safe-t", "62px");
+    document.documentElement.style.setProperty("--safe-b", "34px");
   }
 })();
 </script>
-<link rel="manifest" href="manifest.webmanifest?v=1.11.4-476f6394d4d3">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-476f6394d4d3">
-<link rel="stylesheet" href="styles.css?v=1.11.4-476f6394d4d3">
+<link rel="manifest" href="manifest.webmanifest?v=1.11.4-0804d8fa7b9f">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-0804d8fa7b9f">
+<link rel="stylesheet" href="styles.css?v=1.11.4-0804d8fa7b9f">
 </head>
 <body>
 
@@ -1154,19 +1148,19 @@
   </div>
 </div>
 
-<script src="seed.js?v=1.11.4-476f6394d4d3"></script>
-<script src="sync-core.js?v=1.11.4-476f6394d4d3"></script>
-<script src="cloud.js?v=1.11.4-476f6394d4d3"></script>
-<script src="app.js?v=1.11.4-476f6394d4d3"></script>
+<script src="seed.js?v=1.11.4-0804d8fa7b9f"></script>
+<script src="sync-core.js?v=1.11.4-0804d8fa7b9f"></script>
+<script src="cloud.js?v=1.11.4-0804d8fa7b9f"></script>
+<script src="app.js?v=1.11.4-0804d8fa7b9f"></script>
 <script>
 if ((location.protocol === "https:" || location.hostname === "localhost") && "serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("service-worker.js?v=1.11.4-476f6394d4d3").then(function (registration) {
+    navigator.serviceWorker.register("service-worker.js?v=1.11.4-0804d8fa7b9f").then(function (registration) {
       registration.update().catch(function () {});
     }).catch(function () {});
     navigator.serviceWorker.addEventListener("controllerchange", function () {
       try {
-        var reloadKey = "wpl-sw-reloaded-1.11.4-476f6394d4d3";
+        var reloadKey = "wpl-sw-reloaded-1.11.4-0804d8fa7b9f";
         if (sessionStorage.getItem(reloadKey) === "1") return;
         sessionStorage.setItem(reloadKey, "1");
         location.reload();
