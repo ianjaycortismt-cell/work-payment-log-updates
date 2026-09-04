@@ -19,14 +19,19 @@
   var isStandalone = nav.standalone === true ||
     (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
   var isLayoutPreview = new URLSearchParams(window.location.search).has("ios-app-preview");
-  if ((isApplePhone && isStandalone) || isLayoutPreview) {
-    document.documentElement.classList.add("ios-app", "ios-pwa", "ios-liquid-glass");
+  if (isApplePhone || isLayoutPreview) {
+    document.documentElement.classList.add("ios-app", "ios-liquid-glass");
+    if (isStandalone) document.documentElement.classList.add("ios-pwa");
+    if (isLayoutPreview) {
+      document.documentElement.style.setProperty("--safe-t", "62px");
+      document.documentElement.style.setProperty("--safe-b", "34px");
+    }
   }
 })();
 </script>
-<link rel="manifest" href="manifest.webmanifest?v=1.11.4-cff8bf0de4b7">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-cff8bf0de4b7">
-<link rel="stylesheet" href="styles.css?v=1.11.4-cff8bf0de4b7">
+<link rel="manifest" href="manifest.webmanifest?v=1.11.4-476f6394d4d3">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=1.11.4-476f6394d4d3">
+<link rel="stylesheet" href="styles.css?v=1.11.4-476f6394d4d3">
 </head>
 <body>
 
@@ -1149,14 +1154,24 @@
   </div>
 </div>
 
-<script src="seed.js?v=1.11.4-cff8bf0de4b7"></script>
-<script src="sync-core.js?v=1.11.4-cff8bf0de4b7"></script>
-<script src="cloud.js?v=1.11.4-cff8bf0de4b7"></script>
-<script src="app.js?v=1.11.4-cff8bf0de4b7"></script>
+<script src="seed.js?v=1.11.4-476f6394d4d3"></script>
+<script src="sync-core.js?v=1.11.4-476f6394d4d3"></script>
+<script src="cloud.js?v=1.11.4-476f6394d4d3"></script>
+<script src="app.js?v=1.11.4-476f6394d4d3"></script>
 <script>
 if ((location.protocol === "https:" || location.hostname === "localhost") && "serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("service-worker.js?v=1.11.4-cff8bf0de4b7").catch(function () {});
+    navigator.serviceWorker.register("service-worker.js?v=1.11.4-476f6394d4d3").then(function (registration) {
+      registration.update().catch(function () {});
+    }).catch(function () {});
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      try {
+        var reloadKey = "wpl-sw-reloaded-1.11.4-476f6394d4d3";
+        if (sessionStorage.getItem(reloadKey) === "1") return;
+        sessionStorage.setItem(reloadKey, "1");
+        location.reload();
+      } catch (err) { location.reload(); }
+    });
   });
 }
 </script>

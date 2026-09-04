@@ -1,4 +1,4 @@
-const CACHE = "work-payment-log-1.11.4-cff8bf0de4b7";
+const CACHE = "work-payment-log-1.11.4-476f6394d4d3";
 const SHELL = [
   "./",
   "./index.html",
@@ -36,7 +36,7 @@ self.addEventListener("fetch", event => {
 
   /* Prefer the newest deployed files and keep the last working copy offline. */
   event.respondWith(
-    fetch(request)
+    fetch(request, { cache: "no-store" })
       .then(response => {
         if (response.ok) {
           const copy = response.clone();
