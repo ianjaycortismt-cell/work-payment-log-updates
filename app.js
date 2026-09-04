@@ -3654,6 +3654,23 @@
         navigator.clipboard.writeText(code).then(copied).catch(function () { copyTextFallback(code, copied); });
       } else copyTextFallback(code, copied);
     };
+    $("btnCopyWebWidgetLink").onclick = function () {
+      if (!window.WPLCloud || !WPLCloud.signedIn()) { toast("Sign in to cloud sync first"); return; }
+      var token = ensureLiveWidgetToken();
+      if (!token) { toast("This browser could not create a secure widget key"); return; }
+      var link = new URL("widget.html", document.baseURI);
+      link.searchParams.set("token", token);
+      function copied() {
+        liveWidgetCfg.enabled = true;
+        saveLiveWidgetCfg();
+        publishLiveWidget(true);
+        renderLiveWidget();
+        toast("Widget Web link copied");
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link.href).then(copied).catch(function () { copyTextFallback(link.href, copied); });
+      } else copyTextFallback(link.href, copied);
+    };
     $("btnRefreshLiveWidget").onclick = function () { publishLiveWidget(true); };
     $("edHistory").onclick = function () {
       historyFocusDate = $("edDate").value;

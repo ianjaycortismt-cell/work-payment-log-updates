@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>Work Payment Log widget</title>
+  <link rel="stylesheet" href="widget.css">
+</head>
+<body>
+  <a class="widget" id="widget" href="./" aria-label="Open Work Payment Log">
+    <header>
+      <span class="mark">€</span>
+      <strong>Work Payment Log</strong>
+      <span class="status" id="status">Updating</span>
+    </header>
+    <main>
+      <span class="eyebrow">Estimated take-home</span>
+      <span class="take-home" id="takeHome">—</span>
+      <span class="payday" id="payday">Next payday not set</span>
+    </main>
+    <section class="metrics">
+      <div><span>Total pay</span><strong id="totalPay">—</strong></div>
+      <div><span>Next payday</span><strong id="paydayGross">—</strong></div>
+      <div><span>Hours</span><strong id="hours">—</strong></div>
+      <div class="large-only"><span>Days worked</span><strong id="days">—</strong></div>
+    </section>
+    <p class="message" id="message" hidden></p>
+  </a>
+  <script src="widget.js"></script>
+</body>
+</html>
